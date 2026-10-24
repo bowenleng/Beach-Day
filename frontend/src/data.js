@@ -11,6 +11,7 @@ export const ORIGINS = [
   { id: 'mcallen', name: 'McAllen', lat: 26.2034, lon: -98.23 },
   { id: 'brownsville', name: 'Brownsville', lat: 25.9017, lon: -97.4975 },
   { id: 'galveston', name: 'Galveston', lat: 29.3013, lon: -94.7977 },
+  { id: 'college-station', name: 'College Station', lat: 30.60139, lon: -96.31444 }
 ]
 
 export const TIME_WINDOWS = [

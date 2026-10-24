@@ -347,7 +347,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
             <select value={windowId} onChange={(e) => setWindowId(e.target.value)}>
               {TIME_WINDOWS.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {formatHour(w.start)} – {formatHour(w.end)}
+                  {formatHour(w.start)} - {formatHour(w.end)}
                 </option>
               ))}
             </select>
