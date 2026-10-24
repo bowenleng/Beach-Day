@@ -190,7 +190,7 @@ function ConditionsTab({ m, timeWindow }) {
         <Stat
           icon="sun"
           label="Weather"
-          value={`${m.tempF}°F`}
+          value={`${m.tempF}°F (${Math.round((m.tempF-32) * 10/1.8) / 10}°C)`}
           note={`${m.condition}${m.rainChance >= 20 ? ` · ${m.rainChance}% rain` : ''}`}
           kind="forecast"
           source="Open-Meteo forecast"
