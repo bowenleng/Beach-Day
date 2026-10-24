@@ -878,8 +878,10 @@ button {
   margin-bottom: 6px;
 }
 
-.pref-head .accent-text {
-  font-weight: 400;
+.pref-hint {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .segmented {
@@ -909,12 +911,6 @@ button {
 
 .prefs p + p {
   margin-top: 10px;
-}
-
-.soon {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* Why card */

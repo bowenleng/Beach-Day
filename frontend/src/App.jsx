@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Discover from './Discover.jsx'
 import Icon from './Icon.jsx'
 import { timeAgo } from './data.js'
-import { DEFAULT_PREFS } from './scoring.js'
+import { DEFAULT_PREFS, normalizePrefs } from './scoring.js'
 
 const TABS = [
   { id: 'discover', label: 'Discover' },
@@ -129,7 +129,8 @@ function MyTrips() {
 
 export default function App() {
   const [tab, setTab] = useState('discover')
-  const [prefs, setPrefs] = useStoredState('bdp-prefs', DEFAULT_PREFS)
+  const [storedPrefs, setPrefs] = useStoredState('bdp-prefs', DEFAULT_PREFS)
+  const prefs = normalizePrefs(storedPrefs)
   const [saved, setSaved] = useStoredState('bdp-saved', [])
   const [focusId, setFocusId] = useState(null)
   const [status, setStatus] = useState(null)

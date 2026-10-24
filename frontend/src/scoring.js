@@ -1,27 +1,49 @@
 import { compass, estimateTravel, weatherText } from './data.js'
 
+// Each option's hint explains in plain words what picking it does to the ranking
 export const PREFERENCE_OPTIONS = {
   crowds: [
-    { id: 'quiet', label: 'Quiet' },
-    { id: 'balanced', label: 'Balanced' },
-    { id: 'lively', label: 'Lively' },
+    { id: 'quiet', label: 'Quiet', hint: 'Emptier beaches rank higher' },
+    { id: 'balanced', label: 'Normal', hint: 'A typical amount of people is fine' },
+    { id: 'lively', label: 'Lively', hint: 'Busy, social beaches rank higher' },
   ],
   sun: [
-    { id: 'low', label: 'Low UV' },
-    { id: 'balanced', label: 'Balanced' },
-    { id: 'seeking', label: 'Sun-seeking' },
+    { id: 'low', label: 'Low', hint: 'UV 0–3: hazy or gentler sun' },
+    { id: 'medium', label: 'Medium', hint: 'UV 4–6: sunny, but not the harshest' },
+    { id: 'high', label: 'High', hint: 'UV 7+: strong sun. Sunscreen and shade still matter' },
   ],
   swimming: [
-    { id: 'none', label: 'Not swimming' },
-    { id: 'gentle', label: 'Gentle' },
-    { id: 'confident', label: 'Confident' },
+    { id: 'none', label: 'Staying dry', hint: 'Water conditions barely affect the score' },
+    { id: 'wading', label: 'Wading', hint: 'Rip currents and bacteria count' },
+    { id: 'swimming', label: 'Swimming', hint: 'Rip currents, bacteria and cold water count most' },
+  ],
+  waves: [
+    { id: 'calm', label: 'Calm', hint: 'Under 1 ft, flat and easy' },
+    { id: 'some', label: 'Some', hint: 'About 1–3 ft, fun to splash in' },
+    { id: 'big', label: 'Big', hint: '3 ft and up, good for boogie boarding' },
   ],
 }
 
-export const DEFAULT_PREFS = { crowds: 'quiet', sun: 'low', swimming: 'gentle' }
+export const DEFAULT_PREFS = { crowds: 'quiet', sun: 'low', swimming: 'swimming', waves: 'calm' }
+
+// Older saved preferences used different options; map them over and fill in anything missing
+const OLD_PREFS = {
+  sun: { balanced: 'medium', seeking: 'high' },
+  swimming: { gentle: 'swimming', confident: 'swimming' },
+}
+
+export function normalizePrefs(saved) {
+  const prefs = { ...DEFAULT_PREFS }
+  if (saved?.swimming === 'confident' && !saved.waves) prefs.waves = 'some'
+  for (const key of Object.keys(PREFERENCE_OPTIONS)) {
+    const value = OLD_PREFS[key]?.[saved?.[key]] ?? saved?.[key]
+    if (PREFERENCE_OPTIONS[key].some((o) => o.id === value)) prefs[key] = value
+  }
+  return prefs
+}
 
 export const FACTORS = [
-  { id: 'swimming', label: 'Swimming', weight: 0.35 },
+  { id: 'swimming', label: 'Water', weight: 0.35 },
   { id: 'crowds', label: 'Crowds', weight: 0.25 },
   { id: 'uv', label: 'UV comfort', weight: 0.15 },
   { id: 'weather', label: 'Weather', weight: 0.15 },
@@ -33,8 +55,15 @@ const WATER_ALERTS = /rip current|beach hazards|high surf|coastal flood|storm su
 // NWS alerts that make the whole beach day a bad idea
 const DAY_ALERTS = /warning|hurricane|tropical storm|tornado|extreme heat/i
 
-const IDEAL_UV = { low: 2, balanced: 5, seeking: 8 }
+const IDEAL_UV = { low: 2, medium: 5, high: 8 }
 const IDEAL_CROWD = { quiet: 0, balanced: 0.45, lively: 0.8 }
+
+// How much each water hazard costs, by how much time you'll spend in the water
+const WATER_HAZARDS = {
+  none: { rip: { High: 10 }, bacteria: {}, cold: 0, alert: 10 },
+  wading: { rip: { Moderate: 8, High: 35 }, bacteria: { Medium: 10, High: 35 }, cold: 8, alert: 25 },
+  swimming: { rip: { Moderate: 15, High: 50 }, bacteria: { Medium: 15, High: 45 }, cold: 15, alert: 30 },
+}
 
 const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)))
 const avg = (values) => {
@@ -144,17 +173,19 @@ export function summarize(beach, timeWindow, isToday) {
 }
 
 export function scoreParts(m, prefs, minutes) {
-  let swimming
-  if (prefs.swimming === 'none') {
-    swimming = 100 - Math.max(0, m.waves.ft - 5) * 5
-  } else {
-    const gentle = prefs.swimming === 'gentle'
-    swimming = 100 - Math.max(0, m.waves.ft - (gentle ? 1.5 : 4)) * (gentle ? 30 : 25)
-    swimming -= (gentle ? { Low: 0, Moderate: 15, High: 50 } : { Low: 0, Moderate: 5, High: 35 })[m.rip.level] ?? 0
-    if (m.water.f < (gentle ? 70 : 66)) swimming -= gentle ? 15 : 10
-    swimming -= { High: 45, Medium: 15 }[m.waterQuality?.level] ?? 0
-    if (m.alerts.some((a) => WATER_ALERTS.test(a.event))) swimming -= 30
-  }
+  // Water: how well the waves match what you want, minus hazards that matter more the more you're in the water
+  const ft = m.waves.ft
+  const waveMiss = {
+    calm: Math.max(0, ft - 1) * 30,
+    some: Math.max(0, 1 - ft) * 25 + Math.max(0, ft - 3) * 25,
+    big: Math.max(0, 3 - ft) * 25 + Math.max(0, ft - 7) * 15,
+  }[prefs.waves]
+  const hazards = WATER_HAZARDS[prefs.swimming]
+  let swimming = 100 - waveMiss * (prefs.swimming === 'none' ? 0.5 : 1)
+  swimming -= hazards.rip[m.rip.level] ?? 0
+  swimming -= hazards.bacteria[m.waterQuality?.level] ?? 0
+  if (m.water.f < 70) swimming -= hazards.cold
+  if (m.alerts.some((a) => WATER_ALERTS.test(a.event))) swimming -= hazards.alert
 
   const crowds = 100 - Math.abs(m.crowd - IDEAL_CROWD[prefs.crowds]) * 120
   const uv = 100 - Math.abs(m.peakUv - IDEAL_UV[prefs.sun]) * 12

@@ -91,9 +91,10 @@ function Segmented({ options, value, onChange, label }) {
 
 function Preferences({ prefs, setPrefs }) {
   const rows = [
-    { key: 'crowds', title: 'Crowd tolerance' },
-    { key: 'sun', title: 'Sun & UV preference' },
-    { key: 'swimming', title: 'Swimming' },
+    { key: 'crowds', title: 'Crowds' },
+    { key: 'sun', title: 'UV level' },
+    { key: 'swimming', title: 'Getting in the water' },
+    { key: 'waves', title: 'Waves' },
   ]
   return (
     <section className="card prefs">
@@ -105,25 +106,18 @@ function Preferences({ prefs, setPrefs }) {
         const options = PREFERENCE_OPTIONS[key]
         return (
           <div className="pref-row" key={key}>
-            <div className="pref-head">
-              <span>{title}</span>
-              <span className="accent-text">{options.find((o) => o.id === prefs[key]).label}</span>
-            </div>
+            <div className="pref-head">{title}</div>
             <Segmented
               label={title}
               options={options}
               value={prefs[key]}
               onChange={(v) => setPrefs({ ...prefs, [key]: v })}
             />
+            <p className="pref-hint muted">{options.find((o) => o.id === prefs[key]).hint}</p>
           </div>
         )
       })}
-      <p className="muted small">
-        Sun preference never overrides safety. There is no safe UV level for tanning.
-      </p>
-      <p className="muted small soon">
-        <Icon name="wave" size={14} /> Surf &amp; fishing · On the horizon
-      </p>
+      <p className="muted small">Safety alerts always show, whatever you pick here.</p>
     </section>
   )
 }
