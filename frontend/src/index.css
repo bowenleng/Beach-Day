@@ -334,8 +334,7 @@ button {
   flex-direction: column;
 }
 
-.map-bar,
-.map-legend {
+.map-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -349,28 +348,6 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-
-.map-legend {
-  border-top: 1px solid var(--border);
-}
-
-.map-legend > span:first-child {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.legend-great {
-  color: var(--great);
-}
-
-.legend-mixed {
-  color: var(--mixed);
-}
-
-.legend-poor {
-  color: var(--poor);
 }
 
 .map-wrap {
@@ -420,9 +397,19 @@ button {
 }
 
 .score-pin.selected {
-  background: var(--primary);
+  background: var(--pin-color);
   color: #fff;
   transform: scale(1.12);
+}
+
+/* Pin color follows the match score: 75+ great, 60-74 mixed, under 60 poor */
+.score-pin.tone-great { --pin-color: var(--great); }
+.score-pin.tone-mixed { --pin-color: var(--mixed); }
+.score-pin.tone-poor { --pin-color: var(--poor); }
+
+.score-pin:not(.selected) {
+  border-color: var(--pin-color);
+  color: var(--pin-color);
 }
 
 .pin-label {
@@ -681,13 +668,118 @@ button {
   text-overflow: ellipsis;
 }
 
+/* Live cams */
+.cam-picker {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.cam-picker button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.cam-picker button.active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.cam-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #10201c;
+}
+
+.cam-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.cam-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #dfe9e5;
+  text-decoration: none;
+  font-size: 12.5px;
+  text-align: center;
+  padding: 12px;
+}
+
+.cam-link strong {
+  color: #fff;
+  font-weight: 500;
+}
+
+.cam-caption {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.cam-caption > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.cam-caption a {
+  white-space: nowrap;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d8432f;
+  flex-shrink: 0;
+  align-self: center;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.cam-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 12px;
+  text-align: center;
+}
+
 /* Review stars */
 .ratings {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
-  margin-top: 2px;
-  font-size: 12px;
+  gap: 4px 14px;
+  margin-top: 3px;
+  font-size: 13px;
 }
 
 .rating {
@@ -704,7 +796,8 @@ button {
 }
 
 .stars {
-  font-size: 12px;
+  font-size: 15px;
+  line-height: 1;
   letter-spacing: 1px;
   background: linear-gradient(90deg, #e3a21a var(--pct), #d6d1c3 var(--pct));
   -webkit-background-clip: text;
@@ -785,8 +878,10 @@ button {
   margin-bottom: 6px;
 }
 
-.pref-head .accent-text {
-  font-weight: 400;
+.pref-hint {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .segmented {
@@ -816,12 +911,6 @@ button {
 
 .prefs p + p {
   margin-top: 10px;
-}
-
-.soon {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* Why card */
@@ -1164,10 +1253,6 @@ button {
   border: 2px solid #fff;
 }
 
-.legend-alert {
-  color: var(--danger-text);
-}
-
 .location-error {
   margin: -6px 0 0;
   color: var(--danger-text);
@@ -1409,8 +1494,7 @@ button {
   .detail .beach-photo,
   .detail .detail-foot > .muted,
   .col-right .rank-tagline,
-  .ranked > p.tiny,
-  .map-legend > .muted {
+  .ranked > p.tiny {
     display: none;
   }
   .col .card {
@@ -1447,8 +1531,7 @@ button {
   .primary-button {
     padding: 8px 14px;
   }
-  .map-bar,
-  .map-legend {
+  .map-bar {
     padding: 7px 12px;
   }
 }

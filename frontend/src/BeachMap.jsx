@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { fitTone } from './scoring.js'
 
 const TEXAS_COAST_BOUNDS = [
   [25.85, -97.6],
@@ -8,7 +9,7 @@ const TEXAS_COAST_BOUNDS = [
 ]
 
 function pinIcon(beach, selected) {
-  const className = selected ? 'score-pin selected' : 'score-pin'
+  const className = `score-pin tone-${fitTone(beach.score)}${selected ? ' selected' : ''}`
   const photo = beach.photo ? `<img src="${beach.photo.url}" alt="" />` : ''
   const label = selected ? `<span class="pin-label"><strong>${beach.name}</strong>${photo}</span>` : ''
   const m = beach.metrics
