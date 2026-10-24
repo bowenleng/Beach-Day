@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Discover from './Discover.jsx'
 import Icon from './Icon.jsx'
+import { timeAgo } from './data.js'
 import { DEFAULT_PREFS } from './scoring.js'
 
 const TABS = [
@@ -61,6 +62,56 @@ function SavedBeaches({ saved, onOpen, onRemove }) {
   )
 }
 
+const TRAVEL_SOURCES = {
+  tomtom: 'TomTom routing with live traffic',
+  osrm: 'OSRM road routing (no traffic; add a TomTom key for traffic)',
+  estimate: 'Straight-line estimate (routing unavailable)',
+}
+
+// Header menu listing every data source, whether it answered, and how fresh it is
+function DataStatus({ status }) {
+  if (!status) return <span className="live-pill">Connecting…</span>
+  const failed = status.sources.filter((s) => !s.ok)
+  return (
+    <details className="status-menu">
+      <summary className={failed.length ? 'live-pill degraded' : 'live-pill'}>
+        <i className="status-dot" aria-hidden="true" />
+        {failed.length ? `${failed.length} source${failed.length > 1 ? 's' : ''} down` : 'Live data'}
+      </summary>
+      <div className="status-panel card">
+        <strong>Data sources</strong>
+        <p className="muted tiny">Updated {timeAgo(status.generated)}. Each number on the page shows its source.</p>
+        <ul>
+          {status.sources.map((s) => (
+            <li key={s.id}>
+              <i className={s.ok ? 'status-dot' : 'status-dot down'} aria-hidden="true" />
+              <span>
+                <a href={s.url} target="_blank" rel="noreferrer">{s.label}</a>
+                <span className="muted tiny">
+                  {s.ok ? ` · ${s.fetched ? timeAgo(s.fetched) : 'ok'}` : ' · unavailable'}
+                  {s.detail ? ` · ${s.detail}` : ''}
+                </span>
+              </span>
+            </li>
+          ))}
+          <li>
+            <i className={status.travel === 'estimate' ? 'status-dot down' : 'status-dot'} aria-hidden="true" />
+            <span>
+              Drive times <span className="muted tiny">· {TRAVEL_SOURCES[status.travel]}</span>
+            </span>
+          </li>
+          <li>
+            <i className="status-dot estimate" aria-hidden="true" />
+            <span>
+              Crowds <span className="muted tiny">· estimate, live crowd data planned</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </details>
+  )
+}
+
 function MyTrips() {
   return (
     <main className="page-narrow">
@@ -81,6 +132,7 @@ export default function App() {
   const [prefs, setPrefs] = useStoredState('bdp-prefs', DEFAULT_PREFS)
   const [saved, setSaved] = useStoredState('bdp-saved', [])
   const [focusId, setFocusId] = useState(null)
+  const [status, setStatus] = useState(null)
 
   const toggleSaved = (beach) => {
     setSaved((list) =>
@@ -112,7 +164,7 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <span className="live-pill">Live data</span>
+        <DataStatus status={status} />
       </header>
 
       {tab === 'discover' && (
@@ -123,6 +175,7 @@ export default function App() {
           toggleSaved={toggleSaved}
           focusId={focusId}
           setFocusId={setFocusId}
+          onStatus={setStatus}
         />
       )}
       {tab === 'trips' && <MyTrips />}

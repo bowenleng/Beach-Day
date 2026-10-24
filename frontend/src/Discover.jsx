@@ -4,13 +4,15 @@ import Icon from './Icon.jsx'
 import {
   API_URL,
   ORIGINS,
+  SOURCE_KINDS,
   TIME_WINDOWS,
-  forecastDays,
+  formatClock,
   formatDay,
   formatDuration,
   formatHour,
-  formatClock,
+  shortDate,
   shortHour,
+  timeAgo,
 } from './data.js'
 import { FACTORS, PREFERENCE_OPTIONS, fitLabel, rankBeaches, safetyNotes } from './scoring.js'
 
@@ -31,7 +33,19 @@ function Tag({ tone = 'neutral', children }) {
   return <span className={`tag tag-${tone}`}>{children}</span>
 }
 
+// Small colored dot + label saying how a number was produced (measured, official, estimate…)
+function SourceDot({ kind, text }) {
+  const k = SOURCE_KINDS[kind]
+  return (
+    <span className={`source-dot kind-${kind}`} title={`${k.label}: ${text || k.hint}`}>
+      <i aria-hidden="true" />
+      {k.label}
+    </span>
+  )
+}
+
 const RIP_TONE = { Low: 'neutral', Moderate: 'warn', High: 'danger' }
+const QUALITY_TONE = { Low: 'neutral', Medium: 'warn', High: 'danger' }
 const CROWD_TEXT = { Quiet: 'Quiet', Moderate: 'Moderate crowds', Busy: 'Busy' }
 
 function BeachArt({ beach }) {
@@ -119,9 +133,12 @@ function WhyScore({ beach }) {
         {FACTORS.map((f) => (
           <div className="bar-row" key={f.id}>
             <div className="bar-head">
-              <span>{f.label}</span>
+              <span>
+                {f.label}
+                {f.id === 'crowds' && <span className="muted tiny"> · estimate</span>}
+              </span>
               <span className="muted small">
-                {Math.round(f.weight * 100)}% weight · {beach.parts[f.id]}/100
+                {Math.round(f.weight * 100)}% · {beach.parts[f.id]}/100
               </span>
             </div>
             <div className="bar">
@@ -137,11 +154,14 @@ function WhyScore({ beach }) {
   )
 }
 
-function Stat({ icon, label, value, note }) {
+function Stat({ icon, label, value, note, kind, source }) {
   return (
     <div className="stat">
-      <span className="eyebrow">
-        <Icon name={icon} size={14} /> {label}
+      <span className="stat-label">
+        <span className="eyebrow">
+          <Icon name={icon} size={13} /> {label}
+        </span>
+        <SourceDot kind={kind} text={source} />
       </span>
       <strong>{value}</strong>
       <span className="muted small">{note}</span>
@@ -149,13 +169,215 @@ function Stat({ icon, label, value, note }) {
   )
 }
 
-function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
-  const m = beach.metrics
+function ConditionsTab({ m, timeWindow }) {
   const uvLevel = m.peakUv < 3 ? 'Low' : m.peakUv < 6 ? 'Moderate' : m.peakUv < 8 ? 'High' : 'Very high'
-  const notes = safetyNotes(m, prefs)
   const crowdNote =
     m.crowdPeakHour > timeWindow.start ? `Busiest around ${shortHour(m.crowdPeakHour)}` : 'Busiest early on'
-  const waterNote = m.waterF >= 78 ? 'Warm' : m.waterF >= 70 ? 'Comfortable' : 'Cool · wetsuit useful'
+  const waterNote = m.water.f >= 78 ? 'Warm' : m.water.f >= 70 ? 'Comfortable' : 'Cool · wetsuit useful'
+  const measuredAt = (x) => (x.time ? ` · ${formatClock(x.time.replace('T', ' ').slice(0, 16))}` : '')
+
+  return (
+    <>
+      <div className="stats">
+        <Stat
+          icon="sun"
+          label="Weather"
+          value={`${m.tempF}°F`}
+          note={`${m.condition}${m.rainChance >= 20 ? ` · ${m.rainChance}% rain` : ''}`}
+          kind="forecast"
+          source="Open-Meteo forecast"
+        />
+        <Stat
+          icon="wave"
+          label="Wind"
+          value={`${m.wind.mph} mph ${m.wind.dir || ''}`}
+          note={m.wind.kind === 'measured' ? `Now${m.wind.gust ? `, gusts ${m.wind.gust}` : ''}${measuredAt(m.wind)}` : 'Average for your window'}
+          kind={m.wind.kind}
+          source={m.wind.source}
+        />
+        <Stat
+          icon="sun"
+          label="Peak UV"
+          value={Math.round(m.peakUv)}
+          note={`${uvLevel}${m.highUvHour != null ? ` · shade after ${shortHour(m.highUvHour)}` : ''}`}
+          kind="forecast"
+          source="Open-Meteo forecast"
+        />
+        <Stat
+          icon="flag"
+          label="Rip current"
+          value={m.rip.level}
+          note={m.rip.kind === 'official' ? 'NWS forecast' : 'Estimate'}
+          kind={m.rip.kind}
+          source={m.rip.source}
+        />
+        <Stat
+          icon="wave"
+          label="Waves"
+          value={`${m.waves.ft} ft`}
+          note={m.waves.kind === 'measured' ? `Buoy now${measuredAt(m.waves)}` : m.surfHeight ? `NWS surf: ${m.surfHeight}` : 'Model average'}
+          kind={m.waves.kind}
+          source={m.waves.source}
+        />
+        <Stat
+          icon="drop"
+          label="Water"
+          value={`${m.water.f}°F`}
+          note={m.water.kind === 'measured' ? `${waterNote}${measuredAt(m.water)}` : waterNote}
+          kind={m.water.kind}
+          source={m.water.source}
+        />
+        <Stat
+          icon="wave"
+          label={`Tide at ${shortHour(timeWindow.start)}`}
+          value={m.tide ? `${m.tide.height.toFixed(1)} ft ${m.tide.rising ? '↑' : '↓'}` : '—'}
+          note={m.tide?.next ? `${m.tide.next.type === 'high' ? 'High' : 'Low'} ${formatClock(m.tide.next.time)}` : 'No more turns today'}
+          kind="official"
+          source={m.tide ? `NOAA tide prediction, station ${m.tide.station}` : 'Unavailable'}
+        />
+        <Stat icon="people" label="Crowds" value={m.crowdLabel} note={crowdNote} kind="estimate" source="Modeled from day, season, hour and weather. No live crowd data yet." />
+        <Stat
+          icon="sun"
+          label="Daylight"
+          value={formatClock(m.sun.sunrise)}
+          note={`Sunset ${formatClock(m.sun.sunset)}`}
+          kind="forecast"
+          source="Open-Meteo astronomy"
+        />
+      </div>
+      <div className="source-legend">
+        {['measured', 'official', 'forecast', 'estimate'].map((k) => (
+          <SourceDot key={k} kind={k} />
+        ))}
+      </div>
+    </>
+  )
+}
+
+const FLAGS = [
+  { color: 'green', text: 'Calm conditions, still swim with care' },
+  { color: 'yellow', text: 'Moderate surf or currents' },
+  { color: 'red', text: 'Dangerous surf or strong currents' },
+  { color: 'double-red', text: 'Water closed to the public' },
+  { color: 'purple', text: 'Dangerous marine life (jellyfish, stingrays)' },
+  { color: 'orange', text: 'Environmental warning (air or water quality)' },
+]
+
+function SafetyTab({ beach, m, notes }) {
+  const wq = m.waterQuality
+  return (
+    <div className="safety">
+      <ul className="notes">
+        {notes.map((n) => (
+          <li key={n.text} className={`note note-${n.level}`}>
+            <Icon name="alert" size={15} />
+            <span>{n.text}</span>
+          </li>
+        ))}
+      </ul>
+
+      {m.alerts.map((a) => (
+        <details key={a.id} className="alert-detail">
+          <summary>
+            <strong>{a.event}</strong>
+            <span className="muted tiny">
+              {a.ends ? `until ${new Date(a.ends).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}` : ''}
+            </span>
+          </summary>
+          <p className="small">{a.description}</p>
+          {a.instruction && <p className="small"><strong>What to do:</strong> {a.instruction}</p>}
+          <a className="small" href={a.url} target="_blank" rel="noreferrer">
+            Full alert from {a.sender || 'NWS'}
+          </a>
+        </details>
+      ))}
+
+      <div className="safety-row">
+        <span className="eyebrow"><Icon name="flag" size={13} /> Rip current</span>
+        <span>
+          <Tag tone={RIP_TONE[m.rip.level]}>{m.rip.level} risk</Tag>{' '}
+          <span className="muted small">
+            {m.rip.source}
+            {m.rip.issued ? ` · issued ${timeAgo(m.rip.issued)}` : ''}
+          </span>
+        </span>
+      </div>
+
+      <div className="safety-row">
+        <span className="eyebrow"><Icon name="drop" size={13} /> Water quality</span>
+        {wq ? (
+          <span>
+            <Tag tone={QUALITY_TONE[wq.level]}>{wq.level === 'Low' ? 'Low bacteria' : `${wq.level} bacteria advisory`}</Tag>{' '}
+            <span className="muted small">
+              {wq.result} at {wq.name} ({wq.distance_km} km), sampled {shortDate(wq.date)} ·{' '}
+              <a href={wq.url} target="_blank" rel="noreferrer">Texas Beach Watch</a>
+            </span>
+          </span>
+        ) : (
+          <span className="muted small">No Texas Beach Watch sampling station within 5 km.</span>
+        )}
+      </div>
+
+      <div className="flags">
+        <span className="eyebrow">Beach warning flags</span>
+        <p className="muted small">
+          {beach.patrol_url ? (
+            <>
+              Today's flag is posted by the beach patrol:{' '}
+              <a href={beach.patrol_url} target="_blank" rel="noreferrer">check the live flag status</a>.
+            </>
+          ) : (
+            "This beach's flag isn't published online. Check the flag at the beach access before you swim."
+          )}
+        </p>
+        <ul className="flag-list">
+          {FLAGS.map((f) => (
+            <li key={f.color}>
+              <i className={`flag-swatch flag-${f.color}`} aria-hidden="true" />
+              {f.text}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function SourcesTab({ m, beach, travel }) {
+  const rows = [
+    ['Weather, UV, daylight', 'forecast', 'Open-Meteo forecast', null],
+    ['Wind', m.wind.kind, m.wind.source, m.wind.url],
+    ['Waves', m.waves.kind, m.waves.source, m.waves.url],
+    ['Water temperature', m.water.kind, m.water.source, m.water.url],
+    ['Rip current risk', m.rip.kind, m.rip.source, m.rip.url],
+    ['NWS alerts', 'official', `NWS alerts for zone ${beach.nws_zone}`, 'https://alerts.weather.gov/'],
+    ['Tide', 'official', m.tide ? `NOAA station ${m.tide.station}` : 'Unavailable', m.tide?.url],
+    ['Water quality', 'sampled', m.waterQuality ? `Texas Beach Watch, ${m.waterQuality.name}` : 'No station nearby', m.waterQuality?.url],
+    ['Drive time', travel.source === 'tomtom' ? 'measured' : travel.source === 'osrm' ? 'route' : 'estimate',
+      { tomtom: 'TomTom routing with traffic', osrm: 'OSRM road routing (no traffic)', estimate: 'Straight-line estimate' }[travel.source], null],
+    ['Crowds', 'estimate', 'Estimate. Live crowd data is planned.', null],
+  ]
+  return (
+    <table className="sources-table">
+      <tbody>
+        {rows.map(([what, kind, text, url]) => (
+          <tr key={what}>
+            <td>{what}</td>
+            <td><SourceDot kind={kind} text={text} /></td>
+            <td className="muted small">{url ? <a href={url} target="_blank" rel="noreferrer">{text}</a> : text}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
+  const [tab, setTab] = useState('conditions')
+  const m = beach.metrics
+  const notes = safetyNotes(m, prefs)
+  const serious = notes.filter((n) => n.level !== 'info')
+  const worst = serious.some((n) => n.level === 'danger') ? 'danger' : 'warn'
 
   return (
     <section className="card detail">
@@ -177,37 +399,35 @@ function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
         </button>
       </div>
 
-      <div className="stats">
-        <Stat icon="sun" label="Weather" value={`${m.tempF}°F`} note={`${m.condition}${m.rainChance >= 20 ? ` · ${m.rainChance}% rain` : ''}`} />
-        <Stat
-          icon="wave"
-          label={`Tide at ${shortHour(timeWindow.start)}`}
-          value={m.tide ? `${m.tide.height.toFixed(1)} ft ${m.tide.rising ? '↑' : '↓'}` : '—'}
-          note={m.tide?.next ? `${m.tide.next.type === 'high' ? 'High' : 'Low'} ${m.tide.next.height.toFixed(1)} ft · ${formatClock(m.tide.next.time)}` : 'No more turns today'}
-        />
-        <Stat
-          icon="sun"
-          label="Peak UV"
-          value={`${Math.round(m.peakUv)} · ${uvLevel}`}
-          note={m.highUvHour != null ? `Seek shade after ${shortHour(m.highUvHour)}` : 'Sunscreen still smart'}
-        />
-        <Stat icon="flag" label="Rip current" value={m.ripRisk} note={`Waves ~${m.waveFt} ft · check local flags`} />
-        <Stat icon="people" label="Crowds" value={m.crowdLabel} note={crowdNote} />
-        <Stat icon="drop" label="Water" value={`${m.waterF}°F`} note={waterNote} />
+      {serious.length > 0 && tab !== 'safety' && (
+        <button type="button" className={`alert-strip ${worst}`} onClick={() => setTab('safety')}>
+          <Icon name="alert" size={15} />
+          <span>{serious[0].text}</span>
+          {serious.length > 1 && <span className="alert-more">+{serious.length - 1}</span>}
+        </button>
+      )}
+
+      <div className="detail-tabs" role="tablist">
+        {[
+          ['conditions', 'Conditions'],
+          ['safety', `Safety${serious.length ? ` (${serious.length})` : ''}`],
+          ['sources', 'Sources'],
+        ].map(([id, label]) => (
+          <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>
+            {label}
+          </button>
+        ))}
       </div>
 
-      <div className={notes.length && m.ripRisk === 'High' ? 'notice danger' : 'notice'}>
-        <Icon name="alert" size={16} />
-        <div>
-          {notes.map((n) => (
-            <p key={n}>{n}</p>
-          ))}
-        </div>
+      <div className="detail-body">
+        {tab === 'conditions' && <ConditionsTab m={m} timeWindow={timeWindow} />}
+        {tab === 'safety' && <SafetyTab beach={beach} m={m} notes={notes} />}
+        {tab === 'sources' && <SourcesTab m={m} beach={beach} travel={beach.travel} />}
       </div>
 
       <div className="detail-foot">
         <span className="muted small">
-          Forecast · {shortHour(timeWindow.start)}–{shortHour(timeWindow.end)} CT
+          {shortHour(timeWindow.start)}–{shortHour(timeWindow.end)} CT · {formatDuration(beach.travel.minutes)} drive
         </span>
         <button type="button" className="primary-button" disabled title="Trip planning is coming next">
           Plan this beach day <Icon name="arrow" size={16} />
@@ -217,7 +437,7 @@ function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
   )
 }
 
-function RankedList({ beaches, selectedId, origin, onSelect }) {
+function RankedList({ beaches, selectedId, originName, travelInfo, onSelect }) {
   return (
     <section className="ranked">
       <div className="ranked-head">
@@ -234,11 +454,18 @@ function RankedList({ beaches, selectedId, origin, onSelect }) {
                 <div className="rank-main">
                   <strong>{b.name}</strong>
                   <span className="muted small">
-                    {formatDuration(b.travel.minutes)} · {b.travel.miles} mi from {origin.name}
+                    {formatDuration(b.travel.minutes)} · {b.travel.miles} mi from {originName}
+                    {b.travel.delay_minutes > 5 ? ` · +${b.travel.delay_minutes} min traffic` : ''}
                   </span>
                   <span className="rank-tagline">{b.tagline}</span>
                   <span className="tags">
-                    <Tag tone={RIP_TONE[m.ripRisk]}>{m.ripRisk} rip risk</Tag>
+                    {m.alerts.length > 0 && <Tag tone="danger">{m.alerts.length === 1 ? m.alerts[0].event : `${m.alerts.length} NWS alerts`}</Tag>}
+                    <Tag tone={RIP_TONE[m.rip.level]}>
+                      {m.rip.level} rip risk{m.rip.kind === 'official' ? ' · NWS' : ''}
+                    </Tag>
+                    {m.waterQuality && m.waterQuality.level !== 'Low' && (
+                      <Tag tone={QUALITY_TONE[m.waterQuality.level]}>{m.waterQuality.level} bacteria</Tag>
+                    )}
                     <Tag>{CROWD_TEXT[m.crowdLabel]}</Tag>
                   </span>
                 </div>
@@ -252,31 +479,39 @@ function RankedList({ beaches, selectedId, origin, onSelect }) {
           )
         })}
       </ol>
-      <p className="muted tiny">
-        Travel times are rough estimates without traffic. Swimming conditions can change quickly.
-      </p>
+      <p className="muted tiny">{travelInfo} Swimming conditions can change quickly.</p>
     </section>
   )
 }
 
-export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId, setFocusId }) {
-  const days = useMemo(forecastDays, [])
-  const [dayIndex, setDayIndex] = useState(0)
+const TRAVEL_NOTES = {
+  tomtom: 'Drive times from TomTom, including traffic.',
+  osrm: 'Drive times on real roads (OSRM), without traffic.',
+  estimate: 'Drive times are rough straight-line estimates.',
+}
+
+export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId, setFocusId, onStatus }) {
+  const [day, setDay] = useState(null)
   const [originId, setOriginId] = useState('houston')
+  const [myLocation, setMyLocation] = useState(null)
+  const [locationError, setLocationError] = useState(null)
   const [windowId, setWindowId] = useState('midday')
   const [data, setData] = useState(null)
+  const [travel, setTravel] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const day = days[dayIndex]
-  const origin = ORIGINS.find((o) => o.id === originId)
+  const origin = originId === 'current' && myLocation ? myLocation : ORIGINS.find((o) => o.id === originId) || ORIGINS[0]
   const timeWindow = TIME_WINDOWS.find((w) => w.id === windowId)
+  const days = data?.days || []
+  const dayIndex = data ? days.indexOf(data.date) : 0
+  const isToday = dayIndex === 0
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`${API_URL}/beaches?day=${day.iso}`)
+    fetch(`${API_URL}/beaches${day ? `?day=${day}` : ''}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Server error ${res.status}`)
         return res.json()
@@ -287,11 +522,60 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
     return () => {
       cancelled = true
     }
-  }, [day.iso])
+  }, [day])
 
-  const ranked = useMemo(() => (data ? rankBeaches(data, prefs, timeWindow, origin) : []), [data, prefs, timeWindow, origin])
+  // Drive times depend on the starting point and, with TomTom, on when you leave
+  const departDay = data?.date
+  useEffect(() => {
+    if (!departDay) return
+    let cancelled = false
+    const params = new URLSearchParams({
+      lat: origin.lat,
+      lon: origin.lon,
+      day: departDay,
+      hour: Math.max(0, timeWindow.start - 2),
+      utc_offset: data.utc_offset,
+    })
+    fetch(`${API_URL}/travel?${params}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.status))))
+      .then((json) => !cancelled && setTravel(json))
+      .catch(() => !cancelled && setTravel(null))
+    return () => {
+      cancelled = true
+    }
+  }, [origin.lat, origin.lon, departDay, timeWindow.start, data?.utc_offset])
+
+  useEffect(() => {
+    onStatus?.(data ? { sources: data.sources, generated: data.generated, travel: travel?.provider || 'estimate', loading } : null)
+  }, [data, travel, loading, onStatus])
+
+  const chooseOrigin = (id) => {
+    setLocationError(null)
+    if (id !== 'current') {
+      setOriginId(id)
+      return
+    }
+    if (!navigator.geolocation) {
+      setLocationError('Location is not available in this browser')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setMyLocation({ id: 'current', name: 'your location', lat: pos.coords.latitude, lon: pos.coords.longitude })
+        setOriginId('current')
+      },
+      () => setLocationError('Location permission was denied'),
+      { timeout: 10000 },
+    )
+  }
+
+  const ranked = useMemo(
+    () => (data ? rankBeaches(data.beaches, prefs, timeWindow, origin, travel?.routes, isToday) : []),
+    [data, prefs, timeWindow, origin, travel, isToday],
+  )
   const selected = ranked.find((b) => b.id === focusId) || ranked[0]
   const top = ranked[0]
+  const range = dayIndex <= 2 ? 'Short-range' : dayIndex <= 7 ? 'Mid-range' : 'Long-range'
 
   return (
     <main className="discover">
@@ -307,7 +591,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
                   {selected.metrics.tempF}°F · {selected.metrics.condition}
                 </strong>
                 <span className="muted small">
-                  {day.date.toLocaleDateString('en-US', { weekday: 'long' })} outlook · {selected.name}
+                  {isToday ? 'Today' : formatDay(data.date)} · {selected.name}
                 </span>
               </div>
             </div>
@@ -316,16 +600,16 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
         <Preferences prefs={prefs} setPrefs={setPrefs} />
         {selected && <WhyScore beach={selected} />}
         <p className="muted tiny sources">
-          Weather, UV and waves from <a href="https://open-meteo.com/">Open-Meteo</a> · Tides from{' '}
-          <a href="https://tidesandcurrents.noaa.gov/">NOAA</a> · Crowds and rip risk are estimates. Not a safety
-          advisory.
+          Live data from Open-Meteo, NOAA, the National Weather Service and Texas Beach Watch. Crowds are estimates.
+          Not a safety advisory.
         </p>
       </aside>
 
       <section className="col col-center">
         <div className="controls">
           <Field icon="pin" label="Starting from">
-            <select value={originId} onChange={(e) => setOriginId(e.target.value)}>
+            <select value={originId} onChange={(e) => chooseOrigin(e.target.value)}>
+              <option value="current">{myLocation ? 'My location' : 'Use my location…'}</option>
               {ORIGINS.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}, Texas
@@ -334,11 +618,11 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
             </select>
           </Field>
           <Field icon="calendar" label="Beach day">
-            <select value={dayIndex} onChange={(e) => setDayIndex(Number(e.target.value))}>
-              {days.map((d) => (
-                <option key={d.iso} value={d.index}>
-                  {d.index === 0 ? 'Today, ' : d.index === 1 ? 'Tomorrow, ' : ''}
-                  {formatDay(d.date)}
+            <select value={data?.date || ''} onChange={(e) => setDay(e.target.value)} disabled={!data}>
+              {days.map((d, i) => (
+                <option key={d} value={d}>
+                  {i === 0 ? 'Today, ' : i === 1 ? 'Tomorrow, ' : ''}
+                  {formatDay(d)}
                 </option>
               ))}
             </select>
@@ -353,6 +637,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
             </select>
           </Field>
         </div>
+        {locationError && <p className="muted small location-error">{locationError}</p>}
 
         {error ? (
           <div className="card error">
@@ -371,17 +656,20 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
                 )}
               </span>
               <span className="map-bar-meta">
-                <span className="range-pill" title="Forecasts get less reliable further out">
-                  {dayIndex <= 2 ? 'Short-range' : 'Mid-range'}
+                {loading && data && <span className="muted small">Updating…</span>}
+                <span
+                  className="range-pill"
+                  title={dayIndex > 2 ? 'Official rip current forecasts only cover the next 2 days; further out uses estimates' : 'Official NWS surf forecasts cover this day'}
+                >
+                  {range}
                 </span>
-                <span className="muted small">{ranked.length || 12} beaches</span>
               </span>
             </div>
             <div className="map-wrap">
               {data ? (
                 <BeachMap beaches={ranked} selected={selected} origin={origin} onSelect={setFocusId} />
               ) : (
-                <div className="map-placeholder muted">{loading ? 'Loading forecast…' : ''}</div>
+                <div className="map-placeholder muted">{loading ? 'Loading live data…' : ''}</div>
               )}
             </div>
             <div className="map-legend">
@@ -390,6 +678,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
                 <span className="legend-great">80+ Great fit</span>
                 <span className="legend-mixed">60–79 Mixed fit</span>
                 <span className="legend-poor">Under 60 Poor fit</span>
+                <span className="legend-alert" title="NWS alert, high rip current risk or bacteria advisory">● Warning</span>
               </span>
               <span className="muted tiny">Scores are not safety ratings</span>
             </div>
@@ -400,6 +689,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
       <aside className="col col-right">
         {selected && (
           <BeachDetail
+            key={selected.id}
             beach={selected}
             isTop={selected.id === top.id}
             timeWindow={timeWindow}
@@ -408,7 +698,15 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
             onToggleSave={() => toggleSaved(selected)}
           />
         )}
-        {data && <RankedList beaches={ranked} selectedId={selected?.id} origin={origin} onSelect={setFocusId} />}
+        {data && (
+          <RankedList
+            beaches={ranked}
+            selectedId={selected?.id}
+            originName={origin.name}
+            travelInfo={TRAVEL_NOTES[travel?.provider || 'estimate']}
+            onSelect={setFocusId}
+          />
+        )}
       </aside>
     </main>
   )

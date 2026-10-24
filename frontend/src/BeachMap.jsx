@@ -10,9 +10,12 @@ const TEXAS_COAST_BOUNDS = [
 function pinIcon(beach, selected) {
   const className = selected ? 'score-pin selected' : 'score-pin'
   const label = selected ? `<span class="pin-label">${beach.name}</span>` : ''
+  const m = beach.metrics
+  const warning = m.alerts.length > 0 || m.rip.level === 'High' || m.waterQuality?.level === 'High'
+  const badge = warning ? '<span class="pin-alert"></span>' : ''
   return L.divIcon({
     className: 'score-pin-wrap',
-    html: `<div class="${className}">${beach.score}</div>${label}`,
+    html: `<div class="${className}">${beach.score}${badge}</div>${label}`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
   })
