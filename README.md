@@ -1,6 +1,6 @@
-# Skymart Website
+# Beach day plannar Website
 ## Overview
-A full-stack development project made for Skymart intended as an advertisement site with an AI agent acting in the backend
+Hackathon project
 
 ## Frontend Setup
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
