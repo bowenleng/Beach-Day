@@ -18,6 +18,17 @@ function pinIcon(beach, selected) {
   })
 }
 
+// Leaflet measures its container once; re-measure when the layout resizes it
+function KeepSized() {
+  const map = useMap()
+  useEffect(() => {
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(map.getContainer())
+    return () => observer.disconnect()
+  }, [map])
+  return null
+}
+
 // Keep the selected beach in view when it's picked from the list
 function FollowSelected({ beach }) {
   const map = useMap()
@@ -31,7 +42,7 @@ function FollowSelected({ beach }) {
 
 export default function BeachMap({ beaches, selected, origin, onSelect }) {
   return (
-    <MapContainer bounds={TEXAS_COAST_BOUNDS} scrollWheelZoom={false} className="map" zoomControl>
+    <MapContainer bounds={TEXAS_COAST_BOUNDS} scrollWheelZoom className="map" zoomControl>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -56,6 +67,7 @@ export default function BeachMap({ beaches, selected, origin, onSelect }) {
         />
       ))}
       <FollowSelected beach={selected} />
+      <KeepSized />
     </MapContainer>
   )
 }

@@ -191,7 +191,7 @@ function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
           value={`${Math.round(m.peakUv)} · ${uvLevel}`}
           note={m.highUvHour != null ? `Seek shade after ${shortHour(m.highUvHour)}` : 'Sunscreen still smart'}
         />
-        <Stat icon="flag" label="Rip-current risk" value={m.ripRisk} note={`Waves ~${m.waveFt} ft · check local flags`} />
+        <Stat icon="flag" label="Rip current" value={m.ripRisk} note={`Waves ~${m.waveFt} ft · check local flags`} />
         <Stat icon="people" label="Crowds" value={m.crowdLabel} note={crowdNote} />
         <Stat icon="drop" label="Water" value={`${m.waterF}°F`} note={waterNote} />
       </div>
@@ -295,71 +295,70 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
 
   return (
     <main className="discover">
-      <section className="hero">
-        <div>
+      <aside className="col col-left">
+        <section className="intro">
           <span className="eyebrow accent-text">The Texas coast</span>
           <h1>Find your kind of beach day.</h1>
-        </div>
-        {selected && (
-          <div className="hero-weather">
-            <Icon name="sun" size={22} />
-            <div>
-              <strong>
-                {selected.metrics.tempF}°F · {selected.metrics.condition}
-              </strong>
-              <span className="muted small">
-                {day.date.toLocaleDateString('en-US', { weekday: 'long' })} outlook · {selected.name}
-              </span>
+          {selected && (
+            <div className="hero-weather">
+              <Icon name="sun" size={20} />
+              <div>
+                <strong>
+                  {selected.metrics.tempF}°F · {selected.metrics.condition}
+                </strong>
+                <span className="muted small">
+                  {day.date.toLocaleDateString('en-US', { weekday: 'long' })} outlook · {selected.name}
+                </span>
+              </div>
             </div>
+          )}
+        </section>
+        <Preferences prefs={prefs} setPrefs={setPrefs} />
+        {selected && <WhyScore beach={selected} />}
+        <p className="muted tiny sources">
+          Weather, UV and waves from <a href="https://open-meteo.com/">Open-Meteo</a> · Tides from{' '}
+          <a href="https://tidesandcurrents.noaa.gov/">NOAA</a> · Crowds and rip risk are estimates. Not a safety
+          advisory.
+        </p>
+      </aside>
+
+      <section className="col col-center">
+        <div className="controls">
+          <Field icon="pin" label="Starting from">
+            <select value={originId} onChange={(e) => setOriginId(e.target.value)}>
+              {ORIGINS.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}, Texas
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field icon="calendar" label="Beach day">
+            <select value={dayIndex} onChange={(e) => setDayIndex(Number(e.target.value))}>
+              {days.map((d) => (
+                <option key={d.iso} value={d.index}>
+                  {d.index === 0 ? 'Today, ' : d.index === 1 ? 'Tomorrow, ' : ''}
+                  {formatDay(d.date)}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field icon="clock" label="Time at the beach">
+            <select value={windowId} onChange={(e) => setWindowId(e.target.value)}>
+              {TIME_WINDOWS.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {formatHour(w.start)} – {formatHour(w.end)}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        {error ? (
+          <div className="card error">
+            Couldn't load beach data ({error}). Is the backend running on port 8000?
           </div>
-        )}
-      </section>
-
-      <section className="controls">
-        <Field icon="pin" label="Starting from">
-          <select value={originId} onChange={(e) => setOriginId(e.target.value)}>
-            {ORIGINS.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}, Texas
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field icon="calendar" label="Beach day">
-          <select value={dayIndex} onChange={(e) => setDayIndex(Number(e.target.value))}>
-            {days.map((d) => (
-              <option key={d.iso} value={d.index}>
-                {d.index === 0 ? 'Today, ' : d.index === 1 ? 'Tomorrow, ' : ''}
-                {formatDay(d.date)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field icon="clock" label="Time at the beach">
-          <select value={windowId} onChange={(e) => setWindowId(e.target.value)}>
-            {TIME_WINDOWS.map((w) => (
-              <option key={w.id} value={w.id}>
-                {formatHour(w.start)} – {formatHour(w.end)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <div className="controls-meta">
-          <span className="range-pill" title="Forecasts get less reliable further out">
-            {dayIndex <= 2 ? 'Short-range' : 'Mid-range'}
-          </span>
-          <span className="muted small">{ranked.length || 12} Texas beaches</span>
-        </div>
-      </section>
-
-      {error && (
-        <div className="card error">
-          Couldn't load beach data ({error}). Is the backend running on port 8000?
-        </div>
-      )}
-
-      {!error && (
-        <section className={loading && !data ? 'map-panel loading' : 'map-panel'}>
+        ) : (
           <div className="map-area">
             <div className="map-bar">
               <span>
@@ -371,15 +370,18 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
                   </span>
                 )}
               </span>
-              <span className="accent-text small">
-                Beach scores <Icon name="layers" size={16} />
+              <span className="map-bar-meta">
+                <span className="range-pill" title="Forecasts get less reliable further out">
+                  {dayIndex <= 2 ? 'Short-range' : 'Mid-range'}
+                </span>
+                <span className="muted small">{ranked.length || 12} beaches</span>
               </span>
             </div>
             <div className="map-wrap">
               {data ? (
                 <BeachMap beaches={ranked} selected={selected} origin={origin} onSelect={setFocusId} />
               ) : (
-                <div className="map-placeholder muted">Loading forecast…</div>
+                <div className="map-placeholder muted">{loading ? 'Loading forecast…' : ''}</div>
               )}
             </div>
             <div className="map-legend">
@@ -392,12 +394,11 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
               <span className="muted tiny">Scores are not safety ratings</span>
             </div>
           </div>
-          {data && <RankedList beaches={ranked} selectedId={selected?.id} origin={origin} onSelect={setFocusId} />}
-        </section>
-      )}
+        )}
+      </section>
 
-      {selected && (
-        <section className="bottom-grid">
+      <aside className="col col-right">
+        {selected && (
           <BeachDetail
             beach={selected}
             isTop={selected.id === top.id}
@@ -406,10 +407,9 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
             saved={saved.some((s) => s.id === selected.id)}
             onToggleSave={() => toggleSaved(selected)}
           />
-          <Preferences prefs={prefs} setPrefs={setPrefs} />
-          <WhyScore beach={selected} />
-        </section>
-      )}
+        )}
+        {data && <RankedList beaches={ranked} selectedId={selected?.id} origin={origin} onSelect={setFocusId} />}
+      </aside>
     </main>
   )
 }
