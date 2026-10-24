@@ -8,8 +8,8 @@ export const PREFERENCE_OPTIONS = {
     { id: 'lively', label: 'Lively', hint: 'Busy, social beaches rank higher' },
   ],
   sun: [
-    { id: 'low', label: 'Low', hint: 'UV 0–3: hazy or gentler sun' },
-    { id: 'medium', label: 'Medium', hint: 'UV 4–6: sunny, but not the harshest' },
+    { id: 'low', label: 'Low', hint: 'UV 0-3: hazy or gentler sun' },
+    { id: 'medium', label: 'Medium', hint: 'UV 4-6: sunny, but not the harshest' },
     { id: 'high', label: 'High', hint: 'UV 7+: strong sun. Sunscreen and shade still matter' },
   ],
   swimming: [
@@ -19,7 +19,7 @@ export const PREFERENCE_OPTIONS = {
   ],
   waves: [
     { id: 'calm', label: 'Calm', hint: 'Under 1 ft, flat and easy' },
-    { id: 'some', label: 'Some', hint: 'About 1–3 ft, fun to splash in' },
+    { id: 'some', label: 'Some', hint: 'About 1-3 ft, fun to splash in' },
     { id: 'big', label: 'Big', hint: '3 ft and up, good for boogie boarding' },
   ],
 }
@@ -103,7 +103,7 @@ function ripRisk(beach, waves, alerts) {
     kind: 'estimate',
     source: beach.surf
       ? 'No NWS rip forecast this far out; estimated from waves'
-      : 'NWS isn’t issuing a surf forecast here right now; estimated from waves',
+      : 'NWS isn\'t issuing a surf forecast here right now; estimated from waves',
   }
 }
 
