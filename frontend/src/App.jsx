@@ -1,163 +1,150 @@
-import { useEffect, useMemo, useState } from 'react'
-import BeachMap from './BeachMap.jsx'
-import Checklist from './Checklist.jsx'
-import { scoreBeach, scoreColor, uvLabel, uvWarning } from './scoring.js'
+import { useEffect, useState } from 'react'
+import Discover from './Discover.jsx'
+import Icon from './Icon.jsx'
+import { DEFAULT_PREFS } from './scoring.js'
 
-const API_URL = 'http://127.0.0.1:8000'
-
-const PREFERENCES = [
-  { id: 'sun', label: 'Max sun' },
-  { id: 'balanced', label: 'Balanced' },
-  { id: 'shade', label: 'Low UV' },
+const TABS = [
+  { id: 'discover', label: 'Discover' },
+  { id: 'trips', label: 'My trips' },
+  { id: 'saved', label: 'Saved beaches' },
 ]
 
-function formatDay(date, index) {
-  if (index === 0) return 'Today'
-  return new Date(date + 'T12:00').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })
+// localStorage can throw (private mode, blocked storage), so reads and writes fail soft
+function useStoredState(key, initial) {
+  const [value, setValue] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(key)) ?? initial
+    } catch {
+      return initial
+    }
+  })
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch {
+      // Not persisted; fine for a demo
+    }
+  }, [key, value])
+  return [value, setValue]
 }
 
-function App() {
-  const [data, setData] = useState(null)
-  const [error, setError] = useState(null)
-  const [dayIndex, setDayIndex] = useState(0)
-  const [preference, setPreference] = useState('balanced')
-  const [selectedId, setSelectedId] = useState(null)
+function SavedBeaches({ saved, onOpen, onRemove }) {
+  return (
+    <main className="page-narrow">
+      <h1>Saved beaches</h1>
+      {saved.length === 0 ? (
+        <div className="card empty">
+          <Icon name="bookmark" size={28} />
+          <p>No saved beaches yet. Tap the bookmark on any beach in Discover to keep it here.</p>
+        </div>
+      ) : (
+        <ul className="saved-list">
+          {saved.map((b) => (
+            <li key={b.id} className="card saved-row">
+              <div>
+                <strong>{b.name}</strong>
+                <span className="muted small">{b.city}, TX</span>
+              </div>
+              <div className="saved-actions">
+                <button type="button" className="ghost-button" onClick={() => onRemove(b)}>
+                  Remove
+                </button>
+                <button type="button" className="primary-button" onClick={() => onOpen(b.id)}>
+                  View in Discover <Icon name="arrow" size={16} />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  )
+}
 
-  useEffect(() => {
-    fetch(`${API_URL}/beaches`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Server error ${res.status}`)
-        return res.json()
-      })
-      .then(setData)
-      .catch((e) => setError(e.message))
-  }, [])
+function MyTrips() {
+  return (
+    <main className="page-narrow">
+      <h1>My trips</h1>
+      <div className="card empty">
+        <Icon name="calendar" size={28} />
+        <p>
+          Trip planning is coming next: budget per person, what to bring, and warnings for your day.
+          For now, find your beach in Discover.
+        </p>
+      </div>
+    </main>
+  )
+}
 
-  const beaches = useMemo(() => {
-    if (!data) return []
-    return data
-      .map((b) => {
-        const uv = b.forecast[dayIndex].uv_max
-        return { ...b, uv, score: scoreBeach(uv, preference) }
-      })
-      .sort((a, b) => b.score - a.score)
-  }, [data, dayIndex, preference])
+export default function App() {
+  const [tab, setTab] = useState('discover')
+  const [prefs, setPrefs] = useStoredState('bdp-prefs', DEFAULT_PREFS)
+  const [saved, setSaved] = useStoredState('bdp-saved', [])
+  const [focusId, setFocusId] = useState(null)
 
-  const selected = beaches.find((b) => b.id === selectedId) || beaches[0]
-  const days = data ? data[0].forecast.map((f) => f.date) : []
+  const toggleSaved = (beach) => {
+    setSaved((list) =>
+      list.some((b) => b.id === beach.id)
+        ? list.filter((b) => b.id !== beach.id)
+        : [...list, { id: beach.id, name: beach.name, city: beach.city }],
+    )
+  }
 
   return (
-    <div className="page">
-      <header className="header">
+    <div className="app">
+      <header className="topbar">
         <div className="brand">
-          <img src="/favicon.svg" alt="" width="36" height="36" />
-          <div>
-            <h1>Beach Day Planner</h1>
-            <p className="muted">Find the best Texas beach for your day</p>
-          </div>
+          <svg width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
+            <path d="M1 5c3.5-3 7-3 10.5 0S18.5 8 22 5s5.5-2 7 0M1 11c3.5-3 7-3 10.5 0s7 3 10.5 0 5.5-2 7 0M1 17c3.5-3 7-3 10.5 0s7 3 10.5 0 5.5-2 7 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <span className="brand-name">Beach Day Planner</span>
         </div>
+        <nav className="tabs">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={t.id === tab ? 'tab active' : 'tab'}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+              {t.id === 'saved' && saved.length > 0 && <span className="tab-count">{saved.length}</span>}
+            </button>
+          ))}
+        </nav>
+        <span className="live-pill">Live data</span>
       </header>
 
-      {error && (
-        <div className="card error">
-          Couldn't load beach data ({error}). Is the backend running on port 8000?
-        </div>
+      {tab === 'discover' && (
+        <Discover
+          prefs={prefs}
+          setPrefs={setPrefs}
+          saved={saved}
+          toggleSaved={toggleSaved}
+          focusId={focusId}
+          setFocusId={setFocusId}
+        />
       )}
-      {!data && !error && <div className="card">Loading beaches…</div>}
-
-      {data && (
-        <>
-          <div className="controls">
-            <div className="pills" role="group" aria-label="Day">
-              {days.map((d, i) => (
-                <button
-                  key={d}
-                  type="button"
-                  className={i === dayIndex ? 'pill active' : 'pill'}
-                  onClick={() => setDayIndex(i)}
-                >
-                  {formatDay(d, i)}
-                </button>
-              ))}
-            </div>
-            <div className="pills" role="group" aria-label="Sun preference">
-              {PREFERENCES.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className={p.id === preference ? 'pill active' : 'pill'}
-                  onClick={() => setPreference(p.id)}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <main className="layout">
-            <div className="card map-card">
-              <BeachMap beaches={beaches} selectedId={selected.id} onSelect={setSelectedId} />
-            </div>
-
-            <aside className="side">
-              <section className="card detail">
-                <div className="card-head">
-                  <div>
-                    <h2>{selected.name}</h2>
-                    <p className="muted">{selected.city}, TX</p>
-                  </div>
-                  <span className="score" style={{ background: scoreColor(selected.score) }}>
-                    {selected.score}
-                  </span>
-                </div>
-                <div className="stats">
-                  <div className="stat">
-                    <span className="muted">Max UV</span>
-                    <strong>{selected.uv.toFixed(1)}</strong>
-                    <span>{uvLabel(selected.uv)}</span>
-                  </div>
-                  {dayIndex === 0 && (
-                    <div className="stat">
-                      <span className="muted">UV right now</span>
-                      <strong>{selected.uv_now.toFixed(1)}</strong>
-                      <span>{uvLabel(selected.uv_now)}</span>
-                    </div>
-                  )}
-                </div>
-                {uvWarning(selected.uv) && <p className="warning">{uvWarning(selected.uv)}</p>}
-              </section>
-
-              <section className="card">
-                <h2>Top beaches</h2>
-                <ol className="ranking">
-                  {beaches.map((b) => (
-                    <li key={b.id}>
-                      <button
-                        type="button"
-                        className={b.id === selected.id ? 'rank-row active' : 'rank-row'}
-                        onClick={() => setSelectedId(b.id)}
-                      >
-                        <span className="dot" style={{ background: scoreColor(b.score) }} />
-                        <span className="rank-name">{b.name}</span>
-                        <span className="muted">UV {b.uv.toFixed(1)}</span>
-                        <strong>{b.score}</strong>
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            </aside>
-          </main>
-
-          <Checklist highUv={selected.uv >= 8} />
-        </>
+      {tab === 'trips' && <MyTrips />}
+      {tab === 'saved' && (
+        <SavedBeaches
+          saved={saved}
+          onRemove={toggleSaved}
+          onOpen={(id) => {
+            setFocusId(id)
+            setTab('discover')
+          }}
+        />
       )}
 
-      <footer className="muted footer">
-        UV data from <a href="https://open-meteo.com/">Open-Meteo</a>. Scores are based on UV only for now.
+      <footer className="footer muted tiny">
+        <span>
+          Weather, UV and waves from <a href="https://open-meteo.com/">Open-Meteo</a> · Tides from{' '}
+          <a href="https://tidesandcurrents.noaa.gov/">NOAA</a> · Crowds and rip risk are estimates. Not a safety
+          advisory.
+        </span>
+        <span>Enjoy the coast. Respect the ocean.</span>
       </footer>
     </div>
   )
 }
-
-export default App

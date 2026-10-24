@@ -1,6 +1,6 @@
 # Beach Day Planner Website
 ## Overview
-Hackathon project. A web app that scores Texas beaches so you can pick the best one for your day. It currently uses live UV data from [Open-Meteo](https://open-meteo.com/).
+Hackathon project. A web app that scores Texas beaches against your preferences so you can pick the best one for your day. It uses live weather, UV, wave and water data from [Open-Meteo](https://open-meteo.com/) and tide predictions from [NOAA](https://tidesandcurrents.noaa.gov/). The map uses [OpenStreetMap](https://www.openstreetmap.org/).
 
 For project direction and design notes, see [PROJECT_NOTES.md](PROJECT_NOTES.md).
 

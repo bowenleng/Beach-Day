@@ -37,8 +37,34 @@ A web app that aggregates beach data (tide, UV, rip currents, crowds, weather) a
 
 ## Current state (prototype)
 
-- Texas beaches only, shown on a map.
-- Live UV data from [Open-Meteo](https://open-meteo.com/) (free, no API key), fetched by the backend.
-- The score is based only on UV and the user's sun preference (more sun vs. less sun).
-- The what-to-bring checklist is saved in the browser (localStorage). It adds extra items on high-UV days.
-- Next data sources to add: tides and rip currents (NOAA), weather, crowds.
+The app is split into pages. **Discover** (finding a beach) is built. Planning, budget and what to bring will be separate pages after it.
+
+### Discover
+- 12 Texas beaches on an OpenStreetMap map. No API key needed.
+- Inputs: starting city, beach day (the next 7 days), and time at the beach.
+- Preferences, saved in the browser: crowd tolerance, sun/UV preference and swimming level.
+- Each beach gets a 0–100 match score from five weighted factors:
+  - Swimming 35%: wave height, rip risk, water temperature
+  - Crowds 25%
+  - UV comfort 15%
+  - Weather 15%: rain, temperature, wind, thunderstorms
+  - Travel 10%
+- The "Why this score?" card shows the breakdown. Safety warnings always show, whatever the score.
+- Saved beaches are kept in the browser (localStorage). There are no accounts.
+
+### Data sources (all free, no keys)
+| Data | Source | Notes |
+|---|---|---|
+| Weather, UV, wind | Open-Meteo forecast API | Hourly, 7 days |
+| Waves, water temp | Open-Meteo marine API | Bay beaches have wave height scaled down |
+| Tides | NOAA CO-OPS predictions | Nearest station per beach (set in `backend/beaches.py`) |
+| Rip current risk | **Estimate** from wave height and period | Not the official NWS rip current forecast |
+| Crowds | **Estimate** from popularity, weekend/holiday, season, hour and weather | No real crowd data yet |
+| Travel time | **Estimate** from straight-line distance | No traffic |
+
+### Ideas for next steps
+- Use the official NWS surf zone forecast for rip current risk.
+- Real crowd data, such as parking or foot-traffic APIs.
+- Projections beyond 7 days using historical averages.
+- The planning page: budget per person, what to bring, warnings.
+- Double-check the hand-entered beach amenities in `backend/beaches.py`.
