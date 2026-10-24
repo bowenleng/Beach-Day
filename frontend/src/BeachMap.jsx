@@ -53,7 +53,7 @@ export default function BeachMap({ beaches, selected, origin, onSelect }) {
       />
       <CircleMarker
         center={[origin.lat, origin.lon]}
-        radius={6}
+        radius={4}
         pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#1f5f52', fillOpacity: 1 }}
       >
         <Tooltip direction="top" offset={[0, -6]}>

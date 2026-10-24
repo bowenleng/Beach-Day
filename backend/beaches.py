@@ -86,9 +86,9 @@ BEACHES = [
         "tagline": "Remote and uncrowded, few services",
         "amenities": ["Drive-on beach", "Limited services"],
     },
-    {
+    { 
         "id": "surfside", "name": "Surfside Beach", "city": "Surfside Beach",
-        "lat": 28.9440, "lon": -95.2880, "popularity": 0.6, "bay": False,
+        "lat": 28.949767, "lon": -95.284810, "popularity": 0.6, "bay": False,
         "tide_station": "8772447", "obs_station": "8772471", "buoy": None, "nws_zone": "TXZ437",
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Surfside_Beach_Longview_of_Beach_-_panoramio.jpg/500px-Surfside_Beach_Longview_of_Beach_-_panoramio.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Surfside_Beach_Longview_of_Beach_-_panoramio.jpg",
@@ -98,7 +98,7 @@ BEACHES = [
     },
     {
         "id": "galveston-sp", "name": "Galveston Island State Park", "city": "Galveston",
-        "lat": 29.1950, "lon": -94.9600, "popularity": 0.45, "bay": False,
+        "lat": 29.190887, "lon": -94.955788, "popularity": 0.45, "bay": False,
         "tide_station": "8771510", "obs_station": "8771972", "buoy": "42035", "nws_zone": "TXZ438",
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Gfp-texas-galveston-island-state-park-skies-over-the-gulf.jpg/500px-Gfp-texas-galveston-island-state-park-skies-over-the-gulf.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Gfp-texas-galveston-island-state-park-skies-over-the-gulf.jpg",
@@ -119,7 +119,7 @@ BEACHES = [
     },
     {
         "id": "crystal-beach", "name": "Crystal Beach", "city": "Bolivar Peninsula",
-        "lat": 29.4650, "lon": -94.6300, "popularity": 0.55, "bay": False,
+        "lat": 29.449537, "lon": -94.637024, "popularity": 0.55, "bay": False,
         "tide_station": "8771341", "obs_station": "8771341", "buoy": "42035", "nws_zone": "TXZ439",
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Crystal_Beach_before_the_Hurricane_-_panoramio.jpg/500px-Crystal_Beach_before_the_Hurricane_-_panoramio.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Crystal_Beach_before_the_Hurricane_-_panoramio.jpg",
