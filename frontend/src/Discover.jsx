@@ -413,6 +413,7 @@ function CamTab({ beach }) {
           {cams.map((c, i) => (
             <button key={c.name} type="button" role="tab" aria-selected={c === cam} className={c === cam ? 'active' : ''} onClick={() => setIndex(i)}>
               {c.name}
+              {!c.embed && <Icon name="arrowUpRight" size={11} />}
             </button>
           ))}
         </div>

@@ -679,6 +679,9 @@ button {
 
 .cam-picker button {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--muted);
