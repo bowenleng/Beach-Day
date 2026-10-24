@@ -8,8 +8,12 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "ai-edge-litert>=2.3.0",
     "fastapi[standard]>=0.141.1",
     "httpx>=0.28.1",
+    "numpy>=2.4.6",
+    "onnxruntime>=1.31.0",
+    "pillow>=13.0.0",
 ]
 
 [project.scripts]
