@@ -174,10 +174,15 @@ export function totalScore(parts) {
   return clamp(FACTORS.reduce((sum, f) => sum + parts[f.id] * f.weight, 0))
 }
 
+// great / mixed / poor, used for labels and the map pin colors
+export function fitTone(score) {
+  if (score >= 75) return 'great'
+  if (score >= 60) return 'mixed'
+  return 'poor'
+}
+
 export function fitLabel(score) {
-  if (score >= 80) return 'Great fit'
-  if (score >= 60) return 'Mixed fit'
-  return 'Poor fit'
+  return { great: 'Great fit', mixed: 'Mixed fit', poor: 'Poor fit' }[fitTone(score)]
 }
 
 export function rankBeaches(beaches, prefs, timeWindow, origin, routes, isToday) {

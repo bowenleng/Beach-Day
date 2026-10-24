@@ -7,9 +7,24 @@
 # bay:          True for bay-side beaches, where waves are much smaller than the open Gulf.
 # patrol_url:   Official page with the beach patrol's flag status, where one exists.
 # photo:        Freely licensed photo from Wikimedia Commons (credit and license are shown in the app).
+# cams:         Public live cams at or near the beach. embed is a player URL the owner offers for
+#               embedding; cams without one are shown as a link to the owner's page.
 # Amenities are hand-entered and should be double-checked before relying on them.
 
 GALVESTON_FLAGS = "https://www.visitgalveston.com/beachpatrol/beach-safety/flag-warning-system/"
+
+
+def youtube(video_id):
+    return f"https://www.youtube-nocookie.com/embed/{video_id}?autoplay=1&mute=1&playsinline=1"
+
+
+def ozolio(oid):
+    if oid.startswith("EMB_"):
+        return f"https://relay.ozolio.com/pub.api?cmd=embed&oid={oid}"
+    return f"https://relay.ozolio.com/pub.cgi?cmd=iframe&oid={oid}&app_mode=view"
+
+
+CC_CAMS = "https://visitcorpuschristi.com/beaches/beach-cameras/"
 
 BEACHES = [
     {
@@ -19,6 +34,12 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/South_Padre_Island_beach.jpg/500px-South_Padre_Island_beach.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:South_Padre_Island_beach.jpg",
                   "credit": "Brendajane", "license": "Public domain"},
+        "cams": [
+            {"name": "Isla Blanca Beach Park surf cam", "provider": "South Padre Surf Company",
+             "page": "https://www.youtube.com/watch?v=0FaRaPPTS8M", "embed": youtube("0FaRaPPTS8M"), "lat": 26.0764, "lon": -97.1605},
+            {"name": "Courtyard by Marriott beach cam", "provider": "South Padre Island (YouTube)",
+             "page": "https://www.youtube.com/watch?v=dzylsC0KcOE", "embed": youtube("dzylsC0KcOE"), "lat": 26.1188, "lon": -97.1805},
+        ],
         "tagline": "Clear water and big resort energy",
         "amenities": ["Seasonal lifeguards", "Restrooms", "Public parking"],
     },
@@ -49,6 +70,12 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Beach_%40_Mustang_Island_State_Park_%5Ejcutrer_-_Flickr_-_joncutrer.jpg/500px-Beach_%40_Mustang_Island_State_Park_%5Ejcutrer_-_Flickr_-_joncutrer.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Beach_@_Mustang_Island_State_Park_%5Ejcutrer_-_Flickr_-_joncutrer.jpg",
                   "credit": "Jonathan Cutrer", "license": "CC BY 2.0"},
+        "cams": [
+            {"name": "Whitecap Beach toward Bob Hall Pier", "provider": "City of Corpus Christi",
+             "page": CC_CAMS, "embed": ozolio("CID_XCLW000002D1"), "lat": 27.611, "lon": -97.208},
+            {"name": "St. Augustine Beach Access", "provider": "City of Corpus Christi",
+             "page": CC_CAMS, "embed": ozolio("CID_BHYP000002DB"), "lat": 27.585, "lon": -97.218},
+        ],
         "tagline": "Quiet dunes and long walks",
         "amenities": ["Restrooms", "Showers", "Park entry fee"],
     },
@@ -59,6 +86,13 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Port_Aransas_-Mustang_Island_Beach_-_panoramio.jpg/500px-Port_Aransas_-Mustang_Island_Beach_-_panoramio.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Port_Aransas_-Mustang_Island_Beach_-_panoramio.jpg",
                   "credit": "dwh1974 (Panoramio)", "license": "CC BY 3.0"},
+        "cams": [
+            {"name": "Aransas Princess beach cam", "provider": "HDOnTap",
+             "page": "https://hdontap.com/stream/167516/aransas-princess-port-aransas-beach-live-webcam/", "embed": None,
+             "lat": 27.8105, "lon": -97.0710},
+            {"name": "Aransas Pass Harbor Park (bay side)", "provider": "City of Aransas Pass",
+             "page": "https://www.youtube.com/watch?v=Mn3vY8bordE", "embed": youtube("Mn3vY8bordE"), "lat": 27.9090, "lon": -97.1440},
+        ],
         "tagline": "Lively beach town, drive right up",
         "amenities": ["Seasonal lifeguards", "Restrooms", "Drive-on beach"],
     },
@@ -114,6 +148,15 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/2025-09-13_12_19_56_View_east-southeast_from_the_beach_in_Galveston%2C_Galveston_County%2C_Texas.jpg/500px-2025-09-13_12_19_56_View_east-southeast_from_the_beach_in_Galveston%2C_Galveston_County%2C_Texas.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:2025-09-13_12_19_56_View_east-southeast_from_the_beach_in_Galveston,_Galveston_County,_Texas.jpg",
                   "credit": "Famartin", "license": "CC BY-SA 4.0"},
+        "cams": [
+            {"name": "Galveston 24/7 beach camera", "provider": "ABC13 Houston",
+             "page": "https://www.youtube.com/watch?v=HkHhXsWci7Q", "embed": youtube("HkHhXsWci7Q"), "lat": 29.3084, "lon": -94.7785},
+            {"name": "Seawall Boulevard at 28th Street", "provider": "Visit Galveston",
+             "page": "https://visitgalveston.com/webcams/seawall-beach-webcam", "embed": ozolio("EMB_EXSX00000340"),
+             "lat": 29.2950, "lon": -94.7830},
+            {"name": "61st Street Fishing Pier", "provider": "61st Street Pier",
+             "page": "https://www.61stpier.com/pier-cam", "embed": ozolio("EMB_CTOK0000018D"), "lat": 29.2705, "lon": -94.8270},
+        ],
         "tagline": "Big, busy, and full of amenities",
         "amenities": ["Seasonal lifeguards", "Restrooms", "Parking fee"],
     },
@@ -124,6 +167,11 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Crystal_Beach_before_the_Hurricane_-_panoramio.jpg/500px-Crystal_Beach_before_the_Hurricane_-_panoramio.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Crystal_Beach_before_the_Hurricane_-_panoramio.jpg",
                   "credit": "AudreyIski", "license": "CC BY-SA 3.0"},
+        "cams": [
+            {"name": "Crystal Beach surf cam", "provider": "Bolivar Peninsula Tourism",
+             "page": "https://bolivarpeninsulatexas.com/Webcams/Crystal-Beach-Surf",
+             "embed": "https://player.brownrice.com/embed/coastalsurfcam", "lat": 29.4650, "lon": -94.6300},
+        ],
         "tagline": "Wide sand and beach houses",
         "amenities": ["Drive-on beach", "Beach parking permit"],
     },

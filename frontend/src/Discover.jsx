@@ -10,6 +10,7 @@ import {
   formatDay,
   formatDuration,
   formatHour,
+  milesBetween,
   shortDate,
   shortHour,
   timeAgo,
@@ -378,7 +379,8 @@ function SourcesTab({ m, beach, travel }) {
         </tbody>
       </table>
       <p className="muted tiny photo-credit">
-        Google Maps and Yelp star ratings are shown for reference and are not part of the score.
+        Google Maps and Yelp star ratings are shown for reference and are not part of the score. Live cams belong to
+        their owners and play from their sites.
       </p>
       {beach.photo && (
         <p className="muted tiny photo-credit">
@@ -386,6 +388,70 @@ function SourcesTab({ m, beach, travel }) {
         </p>
       )}
     </>
+  )
+}
+
+// Public live cams at or near the beach. Players are the owners' own embeds; cams that can't be
+// embedded open on the owner's site instead.
+function CamTab({ beach }) {
+  const [index, setIndex] = useState(0)
+  const cams = beach.cams || []
+  if (cams.length === 0) {
+    return (
+      <div className="cam-empty muted small">
+        <Icon name="camera" size={22} />
+        <span>No public live cam found for {beach.name} yet.</span>
+      </div>
+    )
+  }
+  const cam = cams[Math.min(index, cams.length - 1)]
+  const miles = milesBetween(beach, cam)
+  return (
+    <div className="cam-tab">
+      {cams.length > 1 && (
+        <div className="cam-picker" role="tablist">
+          {cams.map((c, i) => (
+            <button key={c.name} type="button" role="tab" aria-selected={c === cam} className={c === cam ? 'active' : ''} onClick={() => setIndex(i)}>
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {cam.embed ? (
+        <div className="cam-frame">
+          <iframe
+            key={cam.embed}
+            src={cam.embed}
+            title={`${cam.name} live cam`}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+      ) : (
+        <a className="cam-frame cam-link" href={cam.page} target="_blank" rel="noreferrer">
+          <Icon name="camera" size={26} />
+          <span>{cam.provider} doesn't allow this cam to play here</span>
+          <strong>
+            Watch on {cam.provider} <Icon name="arrowUpRight" size={13} />
+          </strong>
+        </a>
+      )}
+      <div className="cam-caption">
+        <span className="live-dot" aria-hidden="true" />
+        <span>
+          <strong>{cam.name}</strong>
+          <span className="muted small">
+            {' '}
+            · {miles < 1 ? 'at this beach' : `about ${Math.round(miles)} mi from ${beach.name}`}
+          </span>
+        </span>
+        <a className="small" href={cam.page} target="_blank" rel="noreferrer">
+          {cam.provider} <Icon name="arrowUpRight" size={11} />
+        </a>
+      </div>
+    </div>
   )
 }
 
@@ -474,6 +540,7 @@ function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave, rev
         {[
           ['conditions', 'Conditions'],
           ['safety', `Safety${serious.length ? ` (${serious.length})` : ''}`],
+          ['cams', `Live cam${beach.cams?.length > 1 ? `s (${beach.cams.length})` : ''}`],
           ['sources', 'Sources'],
         ].map(([id, label]) => (
           <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>
@@ -485,6 +552,7 @@ function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave, rev
       <div className="detail-body">
         {tab === 'conditions' && <ConditionsTab m={m} timeWindow={timeWindow} />}
         {tab === 'safety' && <SafetyTab beach={beach} m={m} notes={notes} />}
+        {tab === 'cams' && <CamTab beach={beach} />}
         {tab === 'sources' && <SourcesTab m={m} beach={beach} travel={beach.travel} />}
       </div>
 
@@ -743,16 +811,6 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
               ) : (
                 <div className="map-placeholder muted">{loading ? 'Loading live data…' : ''}</div>
               )}
-            </div>
-            <div className="map-legend">
-              <span>
-                <strong>Your match / 100</strong>
-                <span className="legend-great">80+ Great fit</span>
-                <span className="legend-mixed">60–79 Mixed fit</span>
-                <span className="legend-poor">Under 60 Poor fit</span>
-                <span className="legend-alert" title="NWS alert, high rip current risk or bacteria advisory">● Warning</span>
-              </span>
-              <span className="muted tiny">Scores are not safety ratings</span>
             </div>
           </div>
         )}

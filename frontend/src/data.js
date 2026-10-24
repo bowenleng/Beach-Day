@@ -76,12 +76,17 @@ export function formatDuration(minutes) {
 }
 
 // Straight-line distance padded for roads, at highway-ish speeds. Only used if the backend can't route.
-export function estimateTravel(origin, beach) {
+// Straight-line distance in miles between two {lat, lon} points
+export function milesBetween(a, b) {
   const toRad = (d) => (d * Math.PI) / 180
-  const dLat = toRad(beach.lat - origin.lat)
-  const dLon = toRad(beach.lon - origin.lon)
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(origin.lat)) * Math.cos(toRad(beach.lat)) * Math.sin(dLon / 2) ** 2
-  const miles = 3959 * 2 * Math.asin(Math.sqrt(a)) * 1.25
+  const dLat = toRad(b.lat - a.lat)
+  const dLon = toRad(b.lon - a.lon)
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2
+  return 3959 * 2 * Math.asin(Math.sqrt(h))
+}
+
+export function estimateTravel(origin, beach) {
+  const miles = milesBetween(origin, beach) * 1.25
   return { miles: Math.round(miles), minutes: Math.round(10 + (miles / 55) * 60), source: 'estimate' }
 }
 

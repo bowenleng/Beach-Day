@@ -16,6 +16,7 @@ const PATHS = {
   sliders: 'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4',
   alert: 'M12 3 2 20h20zM12 10v4M12 17v.5',
   chevron: 'm6 9 6 6 6-6',
+  camera: 'M3 7h4l2-3h6l2 3h4v13H3zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   locate: 'M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM12 2v3M12 19v3M2 12h3M19 12h3',
 }
 
