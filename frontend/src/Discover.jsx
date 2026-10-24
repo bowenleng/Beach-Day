@@ -230,7 +230,7 @@ function ConditionsTab({ m, timeWindow }) {
         <Stat
           icon="drop"
           label="Water"
-          value={`${m.water.f}°F`}
+          value={`${m.water.f}°F (${Math.round((m.water.f-32) * 10/1.8) / 10}°C)`}
           note={m.water.kind === 'measured' ? `${waterNote}${measuredAt(m.water)}` : waterNote}
           kind={m.water.kind}
           source={m.water.source}
