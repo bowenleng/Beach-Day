@@ -66,6 +66,7 @@ The app is split into pages. **Discover** (finding a beach) is built. Planning, 
 | Water quality (Enterococcus bacteria) | Texas GLO Beach Watch ArcGIS layer | Worst result among sampling stations within 5 km |
 | Tides | NOAA CO-OPS predictions | `tide_station` per beach |
 | Drive time | TomTom (with traffic) if `TOMTOM_API_KEY` is set, else OSRM road routing, else straight-line estimate | |
+| Review stars | Google Places API (`GOOGLE_PLACES_API_KEY`) and Yelp Fusion (`YELP_API_KEY`), else search links | Display only, not in the score |
 | Crowds | **Estimate** from popularity, weekend/holiday, season, hour and weather | No real crowd data yet (planned) |
 | Beach flags | Not published online in machine-readable form | Flag guide shown; Galveston links to its live flag page |
 

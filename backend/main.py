@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import nws
 import noaa
+import reviews
 import travel
 import water_quality
 from beaches import BEACHES
@@ -259,3 +260,11 @@ async def get_travel(
     async with httpx.AsyncClient(timeout=20) as client:
         hit = await cached(f"travel-{origin}-{depart_at}", lambda: travel.drive_times(client, origin, BEACHES, depart_at), ttl)
     return {**hit["value"], "depart_at": depart_at, "fetched": datetime.fromtimestamp(hit["fetched"], timezone.utc).isoformat()}
+
+
+@app.get("/reviews")
+async def get_reviews():
+    """Google Maps and Yelp star ratings for every beach (display only, not part of the score)."""
+    async with httpx.AsyncClient(timeout=20) as client:
+        hit = await cached("reviews", lambda: reviews.fetch_reviews(client, BEACHES), 12 * 60 * MINUTE)
+    return {**hit["value"], "fetched": datetime.fromtimestamp(hit["fetched"], timezone.utc).isoformat()}

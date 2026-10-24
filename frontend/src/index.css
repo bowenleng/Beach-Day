@@ -642,6 +642,76 @@ button {
   font-weight: 500;
 }
 
+/* Conditions: each reading sits in its own tile so the grid reads clearly */
+.detail .stats {
+  gap: 8px;
+}
+
+/* An odd tile out at the end spans the full row */
+.detail .stat:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.detail .stat {
+  gap: 2px;
+  padding: 9px 10px 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.detail .stat strong {
+  font-size: 16px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail .stat .muted.small {
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.detail .stat-label .eyebrow {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Review stars */
+.ratings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.rating:hover .muted {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.stars {
+  font-size: 12px;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #e3a21a var(--pct), #d6d1c3 var(--pct));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .notice {
   display: flex;
   gap: 10px;
@@ -922,7 +992,7 @@ button {
 }
 
 .detail .stats {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 
 .alert-strip {
@@ -1284,8 +1354,8 @@ button {
   }
 
   .detail .stats {
-    gap: 12px 10px;
-    margin: 12px 0;
+    gap: 8px;
+    margin: 0 0 10px;
   }
 
   .detail .beach-name {
@@ -1357,8 +1427,11 @@ button {
     margin: 6px 0 0;
   }
   .detail .stats {
-    gap: 8px 10px;
-    margin: 10px 0;
+    gap: 6px;
+    margin: 0 0 8px;
+  }
+  .detail .stat {
+    padding: 7px 10px 8px;
   }
   .stat strong {
     font-size: 16px;

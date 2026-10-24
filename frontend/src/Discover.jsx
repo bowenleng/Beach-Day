@@ -377,6 +377,9 @@ function SourcesTab({ m, beach, travel }) {
           ))}
         </tbody>
       </table>
+      <p className="muted tiny photo-credit">
+        Google Maps and Yelp star ratings are shown for reference and are not part of the score.
+      </p>
       {beach.photo && (
         <p className="muted tiny photo-credit">
           Photo: <a href={beach.photo.page} target="_blank" rel="noreferrer">{beach.photo.credit}</a>, {beach.photo.license}, via Wikimedia Commons
@@ -386,7 +389,52 @@ function SourcesTab({ m, beach, travel }) {
   )
 }
 
-function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
+const REVIEW_SITES = [
+  ['google', 'Google'],
+  ['yelp', 'Yelp'],
+]
+
+// Star ratings from Google Maps and Yelp, for reference only (they don't affect the score)
+function Ratings({ reviews }) {
+  if (!reviews) return null
+  return (
+    <div className="ratings">
+      {REVIEW_SITES.map(([site, label]) => {
+        const r = reviews[site]
+        if (!r) return null
+        const rated = r.rating != null
+        return (
+          <a
+            key={site}
+            className="rating"
+            href={r.url}
+            target="_blank"
+            rel="noreferrer"
+            title={rated ? `${r.rating} out of 5 from ${r.count.toLocaleString()} ${label} reviews. Not part of the score.` : `See reviews on ${label}`}
+          >
+            {rated ? (
+              <>
+                <span className="stars" style={{ '--pct': `${(r.rating / 5) * 100}%` }} aria-hidden="true">
+                  ★★★★★
+                </span>
+                <strong>{r.rating.toFixed(1)}</strong>
+                <span className="muted">
+                  {label} ({r.count.toLocaleString()})
+                </span>
+              </>
+            ) : (
+              <span className="muted">
+                {label} reviews <Icon name="arrowUpRight" size={11} />
+              </span>
+            )}
+          </a>
+        )
+      })}
+    </div>
+  )
+}
+
+function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave, reviews }) {
   const [tab, setTab] = useState('conditions')
   const m = beach.metrics
   const notes = safetyNotes(m, prefs)
@@ -401,6 +449,7 @@ function BeachDetail({ beach, isTop, timeWindow, prefs, saved, onToggleSave }) {
           <span className="eyebrow accent-text">{isTop ? 'Your top match' : 'Selected beach'}</span>
           <h2 className="beach-name">{beach.name}</h2>
           <span className="muted small">{beach.amenities.join(' · ')}</span>
+          <Ratings reviews={reviews} />
         </div>
         <button
           type="button"
@@ -512,6 +561,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
   const [windowId, setWindowId] = useState('midday')
   const [data, setData] = useState(null)
   const [travel, setTravel] = useState(null)
+  const [reviews, setReviews] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -537,6 +587,14 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
       cancelled = true
     }
   }, [day])
+
+  // Review stars don't change with the day or preferences, so load them once
+  useEffect(() => {
+    fetch(`${API_URL}/reviews`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then(setReviews)
+      .catch(() => setReviews(null))
+  }, [])
 
   // Drive times depend on the starting point and, with TomTom, on when you leave
   const departDay = data?.date
@@ -710,6 +768,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
             prefs={prefs}
             saved={saved.some((s) => s.id === selected.id)}
             onToggleSave={() => toggleSaved(selected)}
+            reviews={reviews?.beaches[selected.id]}
           />
         )}
         {data && (
