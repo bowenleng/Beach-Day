@@ -91,7 +91,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={tab === 'discover' ? 'app app-discover' : 'app'}>
       <header className="topbar">
         <div className="brand">
           <svg width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
@@ -137,14 +137,17 @@ export default function App() {
         />
       )}
 
-      <footer className="footer muted tiny">
-        <span>
-          Weather, UV and waves from <a href="https://open-meteo.com/">Open-Meteo</a> · Tides from{' '}
-          <a href="https://tidesandcurrents.noaa.gov/">NOAA</a> · Crowds and rip risk are estimates. Not a safety
-          advisory.
-        </span>
-        <span>Enjoy the coast. Respect the ocean.</span>
-      </footer>
+      {/* Discover shows its own sources line so it can fit on one screen */}
+      {tab !== 'discover' && (
+        <footer className="footer muted tiny">
+          <span>
+            Weather, UV and waves from <a href="https://open-meteo.com/">Open-Meteo</a> · Tides from{' '}
+            <a href="https://tidesandcurrents.noaa.gov/">NOAA</a> · Crowds and rip risk are estimates. Not a
+            safety advisory.
+          </span>
+          <span>Enjoy the coast. Respect the ocean.</span>
+        </footer>
+      )}
     </div>
   )
 }

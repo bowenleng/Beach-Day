@@ -217,15 +217,7 @@ button {
   gap: 16px;
 }
 
-.hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.hero h1,
+.intro h1,
 .page-narrow h1 {
   font-size: clamp(28px, 4vw, 38px);
   font-weight: 500;
@@ -301,13 +293,6 @@ button {
   pointer-events: none;
 }
 
-.controls-meta {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .range-pill,
 .fit-pill {
   font-size: 10.5px;
@@ -318,14 +303,6 @@ button {
   background: var(--primary-soft);
   border-radius: 6px;
   padding: 4px 8px;
-}
-
-/* Map + ranked list */
-.map-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 16px;
-  align-items: stretch;
 }
 
 .map-area {
@@ -545,14 +522,6 @@ button {
   font-size: 28px;
   font-weight: 400;
   line-height: 1.1;
-}
-
-/* Bottom cards */
-.bottom-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
 }
 
 .detail-head {
@@ -823,25 +792,215 @@ button {
   margin-right: auto;
 }
 
-/* Responsive */
-@media (max-width: 1080px) {
-  .bottom-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+/* Discover layout: one screen on laptops and up, stacked on smaller screens */
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intro h1 {
+  font-size: 28px;
+  letter-spacing: -0.6px;
+  margin: 4px 0 8px;
+}
+
+.map-bar-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sources a {
+  color: inherit;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.controls .field {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .app-discover {
+    height: 100vh;
+    overflow: hidden;
   }
-  .bottom-grid .detail {
-    grid-column: 1 / -1;
+
+  .app-discover .discover {
+    max-width: none;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 380px;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+
+  .col {
+    min-height: 0;
+  }
+
+  .col-left {
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .col-center .map-area {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .map-wrap {
+    min-height: 0;
+  }
+
+  .col-right .detail {
+    flex-shrink: 0;
+  }
+
+  .col-right .ranked {
+    flex: 1;
+    min-height: 160px;
+  }
+
+  .col-right .ranked-list {
+    flex: 1;
+    max-height: none;
+  }
+
+  /* Tighter cards so everything fits on one screen */
+  .col .card {
+    padding: 14px 16px;
+  }
+
+  .prefs .pref-row {
+    margin-bottom: 10px;
+  }
+
+  .bars {
+    gap: 9px;
+    margin: 12px 0 10px;
+  }
+
+  .detail .stats {
+    gap: 12px 10px;
+    margin: 12px 0;
+  }
+
+  .detail .beach-name {
+    font-size: 20px !important;
+  }
+
+  .detail .detail-foot {
+    margin-top: 12px;
   }
 }
 
-@media (max-width: 860px) {
-  .map-panel {
-    grid-template-columns: minmax(0, 1fr);
+@media (min-width: 1100px) and (max-width: 1499px) {
+  .app-discover .discover {
+    grid-template-columns: 270px minmax(0, 1fr) 340px;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+  .controls {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .controls .field {
+    flex: 1 1 0;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+  .controls .field > .icon:first-child {
+    display: none;
+  }
+  .controls .field select {
+    font-size: 13px;
+  }
+}
+
+/* Short screens (small laptops): trim secondary details instead of scrolling the page */
+@media (min-width: 1100px) and (max-height: 820px) {
+  .intro h1 {
+    font-size: 22px;
+    margin: 2px 0 4px;
+  }
+  .intro .hero-weather,
+  .intro .eyebrow,
+  .sources,
+  .prefs > p,
+  .why > p.muted.small,
+  .why > p.tiny,
+  .detail .beach-art,
+  .detail .detail-foot > .muted,
+  .col-right .rank-tagline,
+  .ranked > p.tiny,
+  .map-legend > .muted {
+    display: none;
+  }
+  .col .card {
+    padding: 12px 14px;
+  }
+  .card-title-row {
+    margin-bottom: 8px;
+  }
+  .segmented button {
+    padding: 5px 4px;
+  }
+  .bars {
+    gap: 6px;
+    margin: 6px 0 0;
+  }
+  .detail .stats {
+    gap: 8px 10px;
+    margin: 10px 0;
+  }
+  .stat strong {
+    font-size: 16px;
+  }
+  .notice {
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+  .detail .detail-foot {
+    margin-top: 10px;
+    justify-content: flex-end;
+  }
+  .primary-button {
+    padding: 8px 14px;
+  }
+  .map-bar,
+  .map-legend {
+    padding: 7px 12px;
+  }
+}
+
+@media (max-width: 1099px) {
+  .discover {
+    display: flex;
+    flex-direction: column;
+  }
+  .col-center {
+    order: 0;
+  }
+  .col-right {
+    order: 1;
+  }
+  .col-left {
+    order: 2;
+  }
+  .map-wrap {
+    min-height: 420px;
   }
   .ranked-list {
-    max-height: none;
-  }
-  .controls-meta {
-    margin-left: 0;
+    max-height: 460px;
   }
 }
 
@@ -863,12 +1022,8 @@ button {
     height: 40px;
     overflow-x: auto;
   }
-  .field {
+  .controls .field {
     flex: 1 1 100%;
-    min-width: 0;
-  }
-  .bottom-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
