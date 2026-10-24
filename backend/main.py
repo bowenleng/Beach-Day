@@ -214,6 +214,7 @@ async def get_beaches(day: date = Query(None, description="YYYY-MM-DD, defaults 
         results.append({
             **{k: beach[k] for k in ("id", "name", "city", "lat", "lon", "tagline", "amenities", "bay", "nws_zone")},
             "patrol_url": beach.get("patrol_url"),
+            "photo": beach.get("photo"),
             "date": day.isoformat(),
             "hourly": hourly,
             "sun": {

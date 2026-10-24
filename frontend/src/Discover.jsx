@@ -49,7 +49,14 @@ const QUALITY_TONE = { Low: 'neutral', Medium: 'warn', High: 'danger' }
 const CROWD_TEXT = { Quiet: 'Quiet', Moderate: 'Moderate crowds', Busy: 'Busy' }
 
 function BeachArt({ beach }) {
-  // Simple generated scene in place of a photo
+  if (beach.photo) {
+    return (
+      <a className="beach-photo" href={beach.photo.page} target="_blank" rel="noreferrer" title={`Photo: ${beach.photo.credit} (${beach.photo.license}), Wikimedia Commons`}>
+        <img src={beach.photo.url} alt={beach.name} loading="lazy" />
+      </a>
+    )
+  }
+  // Simple generated scene when there's no photo
   const hue = (beach.lat * 97) % 40
   return (
     <svg className="beach-art" viewBox="0 0 120 80" aria-hidden="true">
@@ -358,17 +365,24 @@ function SourcesTab({ m, beach, travel }) {
     ['Crowds', 'estimate', 'Estimate. Live crowd data is planned.', null],
   ]
   return (
-    <table className="sources-table">
-      <tbody>
-        {rows.map(([what, kind, text, url]) => (
-          <tr key={what}>
-            <td>{what}</td>
-            <td><SourceDot kind={kind} text={text} /></td>
-            <td className="muted small">{url ? <a href={url} target="_blank" rel="noreferrer">{text}</a> : text}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <>
+      <table className="sources-table">
+        <tbody>
+          {rows.map(([what, kind, text, url]) => (
+            <tr key={what}>
+              <td>{what}</td>
+              <td><SourceDot kind={kind} text={text} /></td>
+              <td className="muted small">{url ? <a href={url} target="_blank" rel="noreferrer">{text}</a> : text}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {beach.photo && (
+        <p className="muted tiny photo-credit">
+          Photo: <a href={beach.photo.page} target="_blank" rel="noreferrer">{beach.photo.credit}</a>, {beach.photo.license}, via Wikimedia Commons
+        </p>
+      )}
+    </>
   )
 }
 

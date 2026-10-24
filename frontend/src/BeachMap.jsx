@@ -9,7 +9,8 @@ const TEXAS_COAST_BOUNDS = [
 
 function pinIcon(beach, selected) {
   const className = selected ? 'score-pin selected' : 'score-pin'
-  const label = selected ? `<span class="pin-label">${beach.name}</span>` : ''
+  const photo = beach.photo ? `<img src="${beach.photo.url}" alt="" />` : ''
+  const label = selected ? `<span class="pin-label"><strong>${beach.name}</strong>${photo}</span>` : ''
   const m = beach.metrics
   const warning = m.alerts.length > 0 || m.rip.level === 'High' || m.waterQuality?.level === 'High'
   const badge = warning ? '<span class="pin-alert"></span>' : ''
@@ -32,14 +33,14 @@ function KeepSized() {
   return null
 }
 
-// Keep the selected beach in view when it's picked from the list
+// Center the map on the selected beach whenever the selection changes (map pin or ranked list)
 function FollowSelected({ beach }) {
   const map = useMap()
+  const lat = beach?.lat
+  const lon = beach?.lon
   useEffect(() => {
-    if (beach && !map.getBounds().pad(-0.1).contains([beach.lat, beach.lon])) {
-      map.panTo([beach.lat, beach.lon])
-    }
-  }, [beach, map])
+    if (lat != null) map.panTo([lat, lon], { animate: true, duration: 0.6 })
+  }, [lat, lon, map])
   return null
 }
 
