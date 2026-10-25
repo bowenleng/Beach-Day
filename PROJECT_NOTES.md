@@ -67,11 +67,12 @@ The app is split into pages. **Discover** (finding a beach) is built. Planning, 
 | Tides | NOAA CO-OPS predictions | `tide_station` per beach |
 | Drive time | TomTom (with traffic) if `TOMTOM_API_KEY` is set, else OSRM road routing, else straight-line estimate | |
 | Review stars | Google Places API (`GOOGLE_PLACES_API_KEY`) and Yelp Fusion (`YELP_API_KEY`), else search links | Display only, not in the score |
-| Crowds | **Estimate** from popularity, weekend/holiday, season, hour and weather | No real crowd data yet (planned) |
+| Crowds | **Estimate** from popularity, weekend/holiday, season, hour and weather | Used in the score for now |
+| AI crowd count (Live cams tab) | YouTube live-cam frames (refreshed ~5 min) run through DM-Count (density, MIT) and YOLOX-S (people boxes, Apache-2.0) on the backend | Not in the score yet. Count is the larger of the two models; levels Quiet <15, Moderate <80, else Busy, to be tuned per cam |
 | Beach flags | Not published online in machine-readable form | Flag guide shown; Galveston links to its live flag page |
 
 ### Ideas for next steps
-- Live crowd data. See the beach-cam computer vision idea.
+- Feed the AI cam counts into the crowd score, with per-cam calibration (each cam sees a different amount of beach) and a mask so patios and roads aren't counted.
 - Projections beyond 16 days using historical averages (Open-Meteo archive).
 - The planning page: budget per person, what to bring, warnings.
 - Amenities from OpenStreetMap instead of hand-entered lists in `backend/beaches.py`.

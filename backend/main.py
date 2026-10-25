@@ -4,13 +4,14 @@ import time
 from datetime import date, datetime, timedelta, timezone
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 import nws
 import noaa
 import reviews
 import travel
+import vision
 import water_quality
 from beaches import BEACHES
 from cache import cached, load_env_file
@@ -269,3 +270,52 @@ async def get_reviews():
     async with httpx.AsyncClient(timeout=20) as client:
         hit = await cached("reviews", lambda: reviews.fetch_reviews(client, BEACHES), 12 * 60 * MINUTE)
     return {**hit["value"], "fetched": datetime.fromtimestamp(hit["fetched"], timezone.utc).isoformat()}
+
+
+_crowd_locks = {}
+
+
+def find_cam(beach_id, cam):
+    beach = next((b for b in BEACHES if b["id"] == beach_id), None)
+    cams = beach.get("cams", []) if beach else []
+    if not 0 <= cam < len(cams):
+        raise HTTPException(status_code=404, detail="No such cam")
+    frame_url = vision.youtube_frame_url(cams[cam]["embed"])
+    if not frame_url:
+        raise HTTPException(status_code=404, detail="AI crowd counting only works on YouTube cams for now")
+    return frame_url
+
+
+async def crowd_analysis(beach_id, cam):
+    """The cached analysis for one cam, refreshed every 10 minutes. Concurrent requests for the
+    same cam share one run, since a run takes several seconds of CPU."""
+    frame_url = find_cam(beach_id, cam)
+    key = f"crowd-{beach_id}-{cam}"
+    lock = _crowd_locks.setdefault(key, asyncio.Lock())
+    async with lock, httpx.AsyncClient(timeout=30) as client:
+        async def run():
+            result, jpg = await vision.analyze_frame(client, frame_url)
+            return {"result": result, "jpg": jpg}
+
+        return await cached(key, run, 10 * MINUTE)
+
+
+@app.get("/crowd")
+async def get_crowd(beach: str, cam: int = 0):
+    """AI crowd count for one live cam: people boxes, a density map and the analyzed frame."""
+    try:
+        hit = await crowd_analysis(beach, cam)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Crowd analysis failed ({type(e).__name__})")
+    fetched = datetime.fromtimestamp(hit["fetched"], timezone.utc).isoformat()
+    return {**hit["value"]["result"], "frame": f"/crowd/frame?beach={beach}&cam={cam}&v={int(hit['fetched'])}",
+            "fetched": fetched}
+
+
+@app.get("/crowd/frame")
+async def get_crowd_frame(beach: str, cam: int = 0):
+    """The exact frame the crowd analysis ran on, so the overlay lines up with it."""
+    hit = await crowd_analysis(beach, cam)
+    return Response(hit["value"]["jpg"], media_type="image/jpeg", headers={"Cache-Control": "public, max-age=600"})

@@ -22,6 +22,8 @@ uv run fastapi dev main.py
 ```
 The API runs at http://127.0.0.1:8000. `uv run` installs the Python dependencies automatically the first time.
 
+The AI crowd counter on the Live cams tab downloads two models (~120 MB) into `backend/models/` the first time a cam is analyzed, so that first run takes a minute.
+
 ### Frontend (terminal 2)
 ```
 cd frontend

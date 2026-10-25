@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import BeachMap from './BeachMap.jsx'
+import CamPlayer from './CrowdVision.jsx'
 import Icon from './Icon.jsx'
 import {
   API_URL,
@@ -398,7 +399,8 @@ function CamTab({ beach }) {
       </div>
     )
   }
-  const cam = cams[Math.min(index, cams.length - 1)]
+  const camIndex = Math.min(index, cams.length - 1)
+  const cam = cams[camIndex]
   const miles = milesBetween(beach, cam)
   return (
     <div className="cam-tab">
@@ -413,17 +415,7 @@ function CamTab({ beach }) {
         </div>
       )}
       {cam.embed ? (
-        <div className="cam-frame">
-          <iframe
-            key={cam.embed}
-            src={cam.embed}
-            title={`${cam.name} live cam`}
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        </div>
+        <CamPlayer key={`${beach.id}-${camIndex}`} beachId={beach.id} camIndex={camIndex} cam={cam} />
       ) : (
         <a className="cam-frame cam-link" href={cam.page} target="_blank" rel="noreferrer">
           <Icon name="camera" size={26} />
@@ -471,7 +463,11 @@ function Ratings({ reviews }) {
             href={r.url}
             target="_blank"
             rel="noreferrer"
-            title={rated ? `${r.rating} out of 5 from ${r.count.toLocaleString()} ${label} reviews. Not part of the score.` : `See reviews on ${label}`}
+            title={
+              rated
+                ? `${r.rating} out of 5 from ${r.count.toLocaleString()} ${label} reviews${r.name ? ` of ${r.name}` : ''}${r.as_of ? `, as of ${formatDay(r.as_of)}` : ''}. Not part of the score.`
+                : `See reviews on ${label}`
+            }
           >
             {rated ? (
               <>
