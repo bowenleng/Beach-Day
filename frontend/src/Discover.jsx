@@ -273,7 +273,7 @@ function Conditions({ beach, dayLabel, reviews }) {
         <Cond
           flag={f.weather}
           label="Weather"
-          value={`${m.tempF}°`}
+          value={`${m.tempF}°F`}
           note={`${m.condition}${m.rainChance >= 20 ? `, ${m.rainChance}% rain` : ''}`}
         />
         <Cond
@@ -299,9 +299,9 @@ function Conditions({ beach, dayLabel, reviews }) {
         <Cond
           flag={f.water}
           label="Water"
-          value={`${m.water.f}°`}
+          value={`${m.water.f}°F`}
           note={waterWord}
-          live={live?.water && `Sensor reads ${live.water.f}° (${clock(live.water.time)})`}
+          live={live?.water && `Sensor reads ${live.water.f}°F (${clock(live.water.time)})`}
         />
         <Cond
           flag={f.rip}
