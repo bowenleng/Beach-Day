@@ -2,6 +2,8 @@
 ## Overview
 Hackathon project. A web app that scores Texas beaches against your preferences so you can pick the best one for your day. It combines live data from [Open-Meteo](https://open-meteo.com/) (forecasts), [NOAA](https://tidesandcurrents.noaa.gov/) (tides, live water temperature, wind and wave buoys), the [National Weather Service](https://www.weather.gov/beach/) (rip current forecasts and alerts) and [Texas Beach Watch](https://www.texasbeachwatch.com/) (bacteria sampling). The map uses [OpenStreetMap](https://www.openstreetmap.org/).
 
+For features, how the score works, data sources and the computer vision behind the cams, see [PROJECT_NOTES.md](PROJECT_NOTES.md).
+
 ## Requirements
 - [Node.js](https://nodejs.org) (includes npm)
 - [uv](https://docs.astral.sh/uv/) for Python: `winget install astral-sh.uv`
