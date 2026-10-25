@@ -122,39 +122,18 @@ export default function CamPlayer({ beachId, camIndex, cam }) {
         ) : (
           <img className="ai-frame" src={`${API_URL}${data.frame}`} alt={`Frame from ${cam.name} analyzed for crowds`} />
         )}
-        {aiSupported && (
-          <div className="ai-overlay">
-            {showHeat && <HeatLayer density={data.density} />}
-            {view === 'frame' && data && <BoxLayer people={data.people} />}
-            {(loading || view === 'frame') && <div className="ai-scan" />}
-            <span className="ai-corner tl" />
-            <span className="ai-corner tr" />
-            <span className="ai-corner bl" />
-            <span className="ai-corner br" />
-            <Hud data={data} loading={loading} error={error} view={view} />
-          </div>
-        )}
       </div>
       {aiSupported && (
         <div className="ai-controls">
           <div className="ai-toggle" role="radiogroup" aria-label="Cam view">
             {[
               ['live', 'Live'],
-              ['frame', 'AI frame'],
             ].map(([id, label]) => (
               <button key={id} type="button" role="radio" aria-checked={view === id} className={view === id ? 'active' : ''} disabled={id === 'frame' && !data} onClick={() => setView(id)}>
                 {label}
               </button>
             ))}
           </div>
-          <label className="ai-heat-toggle">
-            <input type="checkbox" checked={heat} onChange={(e) => setHeat(e.target.checked)} /> Heat map
-          </label>
-          {data && !data.dark && (
-            <span className="muted tiny ai-meta" title={`${data.detected} people boxed by YOLOX-S, ${data.estimated} estimated from DM-Count density. Analysis took ${data.seconds}s.`}>
-              <Icon name="people" size={12} /> {data.detected} boxed · {data.estimated} est.
-            </span>
-          )}
         </div>
       )}
     </div>
