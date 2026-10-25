@@ -169,7 +169,7 @@ function HeroImage({ beach }) {
   )
 }
 
-function Hero({ beach, isTop, outOfRange, dayLabel, prefs, origin, saved, onToggleSave, onBackToTop, total }) {
+function Hero({ beach, isTop, outOfRange, dayLabel, prefs, origin, onBackToTop, total }) {
   const m = beach.metrics
   const { reason, tradeoffs } = pitch(beach, prefs)
   const rip = ripLine(m, prefs)
@@ -199,9 +199,6 @@ function Hero({ beach, isTop, outOfRange, dayLabel, prefs, origin, saved, onTogg
           <a className="primary-button" href={directions} target="_blank" rel="noreferrer">
             Directions <Icon name="arrowUpRight" size={16} />
           </a>
-          <button type="button" className={saved ? 'ghost-button on-photo saved' : 'ghost-button on-photo'} onClick={onToggleSave} aria-pressed={saved}>
-            <Icon name="bookmark" size={16} filled={saved} /> {saved ? 'Saved' : 'Save'}
-          </button>
           {!isTop && (
             <button type="button" className="text-button on-photo" onClick={onBackToTop}>
               Back to the top pick
@@ -687,7 +684,7 @@ function initialDay(now) {
   return windowViable(w, now.hour) ? { day: null, moved: null } : { day: addDays(now.date, 1), moved: w }
 }
 
-export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId, setFocusId, onStatus }) {
+export default function Discover({ prefs, setPrefs, focusId, setFocusId, onStatus }) {
   const [now, setNow] = useState(coastNow)
   const [start] = useState(() => initialDay(now))
   const [day, setDay] = useState(start.day)
@@ -842,7 +839,7 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
   } else if (!data) {
     hero = (
       <HeroMessage title="Checking the coast…" loading>
-        <p className="hero-reason">Pulling forecasts, surf reports and water tests for 12 beaches.</p>
+        <p className="hero-reason">Pulling forecasts, surf reports and water tests for the whole coast.</p>
       </HeroMessage>
     )
   } else if (!top) {
@@ -875,8 +872,6 @@ export default function Discover({ prefs, setPrefs, saved, toggleSaved, focusId,
         dayLabel={dayLabel}
         prefs={prefs}
         origin={origin}
-        saved={saved.some((s) => s.id === selected.id)}
-        onToggleSave={() => toggleSaved(selected)}
         onBackToTop={() => setFocusId(null)}
       />
     )

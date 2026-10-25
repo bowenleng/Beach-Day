@@ -4,12 +4,6 @@ import Icon from './Icon.jsx'
 import { timeAgo } from './data.js'
 import { DEFAULT_PREFS, normalizePrefs } from './scoring.js'
 
-const TABS = [
-  { id: 'discover', label: 'Discover' },
-  { id: 'trips', label: 'My trips' },
-  { id: 'saved', label: 'Saved beaches' },
-]
-
 // localStorage can throw (private mode, blocked storage), so reads and writes fail soft
 function useStoredState(key, initial) {
   const [value, setValue] = useState(() => {
@@ -27,39 +21,6 @@ function useStoredState(key, initial) {
     }
   }, [key, value])
   return [value, setValue]
-}
-
-function SavedBeaches({ saved, onOpen, onRemove }) {
-  return (
-    <main className="page-narrow">
-      <h1>Saved beaches</h1>
-      {saved.length === 0 ? (
-        <div className="card empty">
-          <Icon name="bookmark" size={28} />
-          <p>Nothing saved yet. Hit Save on any beach and it'll wait for you here.</p>
-        </div>
-      ) : (
-        <ul className="saved-list">
-          {saved.map((b) => (
-            <li key={b.id} className="card saved-row">
-              <div>
-                <strong>{b.name}</strong>
-                <span className="muted small">{b.city}, TX</span>
-              </div>
-              <div className="saved-actions">
-                <button type="button" className="ghost-button" onClick={() => onRemove(b)}>
-                  Remove
-                </button>
-                <button type="button" className="primary-button" onClick={() => onOpen(b.id)}>
-                  View in Discover <Icon name="arrow" size={16} />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
-  )
 }
 
 const TRAVEL_SOURCES = {
@@ -105,41 +66,16 @@ function DataStatus({ status }) {
   )
 }
 
-function MyTrips() {
-  return (
-    <main className="page-narrow">
-      <h1>My trips</h1>
-      <div className="card empty">
-        <Icon name="calendar" size={28} />
-        <p>
-          Trip planning is coming next: budget per person, what to bring, and warnings for your day.
-          For now, find your beach in Discover.
-        </p>
-      </div>
-    </main>
-  )
-}
-
 export default function App() {
-  const [tab, setTab] = useState('discover')
   const [storedPrefs, setPrefs] = useStoredState('bdp-prefs', DEFAULT_PREFS)
   const prefs = normalizePrefs(storedPrefs)
-  const [saved, setSaved] = useStoredState('bdp-saved', [])
   const [focusId, setFocusId] = useState(null)
   const [status, setStatus] = useState(null)
 
-  const toggleSaved = (beach) => {
-    setSaved((list) =>
-      list.some((b) => b.id === beach.id)
-        ? list.filter((b) => b.id !== beach.id)
-        : [...list, { id: beach.id, name: beach.name, city: beach.city }],
-    )
-  }
-
   return (
-    <div className={tab === 'discover' ? 'app app-discover' : 'app'}>
+    <div className="app">
       <header className="topbar">
-        <button type="button" className="brand" onClick={() => setTab('discover')}>
+        <div className="brand">
           {/* Half sun setting into striped water, like an old motel sign */}
           <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true">
             <path d="M5 15a12 12 0 0 1 24 0z" fill="var(--turq)" />
@@ -149,46 +85,11 @@ export default function App() {
           <span className="brand-name">
             Beach Day <span>Planner</span>
           </span>
-        </button>
-        <nav className="tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={t.id === tab ? 'tab active' : 'tab'}
-              onClick={() => setTab(t.id)}
-            >
-              {t.label}
-              {t.id === 'saved' && saved.length > 0 && <span className="tab-count">{saved.length}</span>}
-            </button>
-          ))}
-        </nav>
+        </div>
         <DataStatus status={status} />
       </header>
 
-      {tab === 'discover' && (
-        <Discover
-          prefs={prefs}
-          setPrefs={setPrefs}
-          saved={saved}
-          toggleSaved={toggleSaved}
-          focusId={focusId}
-          setFocusId={setFocusId}
-          onStatus={setStatus}
-        />
-      )}
-      {tab === 'trips' && <MyTrips />}
-      {tab === 'saved' && (
-        <SavedBeaches
-          saved={saved}
-          onRemove={toggleSaved}
-          onOpen={(id) => {
-            setFocusId(id)
-            setTab('discover')
-          }}
-        />
-      )}
-
+      <Discover prefs={prefs} setPrefs={setPrefs} focusId={focusId} setFocusId={setFocusId} onStatus={setStatus} />
       <footer className="footer">
         <div>
           <p className="footer-sign">Enjoy the coast. Respect the ocean.</p>

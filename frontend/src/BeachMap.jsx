@@ -178,7 +178,7 @@ export default function BeachMap({ beaches, outOfRange = [], selected, topId, or
   return (
     <>
       <TintFilter />
-      <MapContainer bounds={TEXAS_COAST_BOUNDS} scrollWheelZoom={false} className="map" zoomControl>
+      <MapContainer bounds={TEXAS_COAST_BOUNDS} scrollWheelZoom className="map" zoomControl>
         <TileLayer
           attribution='Tiles &copy; <a href="https://www.esri.com/">Esri</a>, HERE, Garmin, &copy; OpenStreetMap contributors'
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"

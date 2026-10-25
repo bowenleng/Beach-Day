@@ -40,7 +40,7 @@ A web app that aggregates beach data (tide, UV, rip currents, crowds, weather) a
 The app is split into pages. **Discover** (finding a beach) is built. Planning, budget and what to bring will be separate pages after it.
 
 ### Discover
-- 12 Texas beaches on a map. No API key needed.
+- 13 Texas beaches on a map. No API key needed.
 - Inputs, written as one sentence: starting point (a city or "my location"), beach day (the next 16 days), time at the beach, and how far you'll drive (1, 2 or 3 hours, or any distance). If today's window is over, it opens on tomorrow and says so.
 - Preferences, saved in the browser: crowds, sun, getting in the water, and waves. A short note appears when they pull against each other.
 - Each beach gets one 0–100 score, explained in words ("Low rip risk, comfortable water. But: choppier water") rather than as a breakdown. It's built from five factors:
@@ -52,7 +52,7 @@ The app is split into pages. **Discover** (finding a beach) is built. Planning, 
 - The top pick leads the page with its photo, a tide-gauge score and the rip current note. Below it come the forecast for your window, then tabs for **Safety** (NWS alerts, water quality, flag guide), **Live cams** and **Where the numbers come from**.
 - Lifeguard flag colors are the status colors: each beach and each condition gets the flag a lifeguard would likely fly, based on the forecast. Estimates (crowds, estimated rip risk, straight-line drives) are marked. The header's Sources menu shows each source's status and freshness.
 - Safety warnings always show, whatever the score.
-- Saved beaches are kept in the browser (localStorage). There are no accounts.
+- Preferences are kept in the browser (localStorage). There are no accounts.
 
 ### Data sources (all free)
 | Data | Source | Notes |
