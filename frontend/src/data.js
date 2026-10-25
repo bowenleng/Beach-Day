@@ -40,6 +40,40 @@ export function shortHour(hour) {
   return `${hour % 12 || 12} ${hour < 12 ? 'am' : 'pm'}`
 }
 
+// "10 am–3 pm"
+export function windowLabel(w) {
+  return `${shortHour(w.start)}–${shortHour(w.end)}`
+}
+
+// Today's date and the current hour (e.g. 13.5) on the Texas coast, whatever the viewer's time zone
+export function coastNow() {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Chicago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(new Date())
+      .map((p) => [p.type, p.value]),
+  )
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) + Number(parts.minute) / 60 }
+}
+
+// "2026-10-24", 1 -> "2026-10-25"
+export function addDays(iso, n) {
+  const d = new Date(`${iso}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+
+export function weekday(iso) {
+  return parseDay(iso).toLocaleDateString('en-US', { weekday: 'long' })
+}
+
 // "14:36" or "2026-10-24 14:36" -> "2:36 pm"
 export function formatClock(time) {
   const [h, m] = time.slice(-5).split(':').map(Number)
@@ -75,7 +109,6 @@ export function formatDuration(minutes) {
   return m ? `${h} hr ${m} min` : `${h} hr`
 }
 
-// Straight-line distance padded for roads, at highway-ish speeds. Only used if the backend can't route.
 // Straight-line distance in miles between two {lat, lon} points
 export function milesBetween(a, b) {
   const toRad = (d) => (d * Math.PI) / 180
@@ -85,6 +118,7 @@ export function milesBetween(a, b) {
   return 3959 * 2 * Math.asin(Math.sqrt(h))
 }
 
+// Straight-line distance padded for roads, at highway-ish speeds. Only used if the backend can't route.
 export function estimateTravel(origin, beach) {
   const miles = milesBetween(origin, beach) * 1.25
   return { miles: Math.round(miles), minutes: Math.round(10 + (miles / 55) * 60), source: 'estimate' }

@@ -36,7 +36,7 @@ function SavedBeaches({ saved, onOpen, onRemove }) {
       {saved.length === 0 ? (
         <div className="card empty">
           <Icon name="bookmark" size={28} />
-          <p>No saved beaches yet. Tap the bookmark on any beach in Discover to keep it here.</p>
+          <p>Nothing saved yet. Hit Save on any beach and it'll wait for you here.</p>
         </div>
       ) : (
         <ul className="saved-list">
@@ -68,43 +68,36 @@ const TRAVEL_SOURCES = {
   estimate: 'Straight-line estimate (routing unavailable)',
 }
 
-// Header menu listing every data source, whether it answered, and how fresh it is
+// Header menu listing every data source, whether it answered, and how fresh it is. It stays quiet
+// unless something is down.
 function DataStatus({ status }) {
-  if (!status) return <span className="live-pill">Connecting…</span>
+  if (!status) return <span className="sources-link muted">Sources</span>
   const failed = status.sources.filter((s) => !s.ok)
   return (
     <details className="status-menu">
-      <summary className={failed.length ? 'live-pill degraded' : 'live-pill'}>
-        <i className="status-dot" aria-hidden="true" />
-        {failed.length ? `${failed.length} source${failed.length > 1 ? 's' : ''} down` : 'Live data'}
+      <summary className={failed.length ? 'sources-link degraded' : 'sources-link'}>
+        {failed.length ? `${failed.length} source${failed.length > 1 ? 's' : ''} down` : 'Sources'}
+        <Icon name="chevron" size={14} />
       </summary>
-      <div className="status-panel card">
-        <strong>Data sources</strong>
-        <p className="muted tiny">Updated {timeAgo(status.generated)}. Each number on the page shows its source.</p>
+      <div className="status-panel">
+        <p className="muted small">Updated {timeAgo(status.generated)}.</p>
         <ul>
           {status.sources.map((s) => (
             <li key={s.id}>
-              <i className={s.ok ? 'status-dot' : 'status-dot down'} aria-hidden="true" />
-              <span>
-                <a href={s.url} target="_blank" rel="noreferrer">{s.label}</a>
-                <span className="muted tiny">
-                  {s.ok ? ` · ${s.fetched ? timeAgo(s.fetched) : 'ok'}` : ' · unavailable'}
-                  {s.detail ? ` · ${s.detail}` : ''}
-                </span>
+              <a href={s.url} target="_blank" rel="noreferrer">{s.label}</a>
+              <span className={s.ok ? 'muted small' : 'down small'}>
+                {s.ok ? (s.fetched ? timeAgo(s.fetched) : 'ok') : 'unavailable'}
+                {s.detail ? ` · ${s.detail}` : ''}
               </span>
             </li>
           ))}
           <li>
-            <i className={status.travel === 'estimate' ? 'status-dot down' : 'status-dot'} aria-hidden="true" />
-            <span>
-              Drive times <span className="muted tiny">· {TRAVEL_SOURCES[status.travel]}</span>
-            </span>
+            <span>Drive times</span>
+            <span className={status.travel === 'estimate' ? 'down small' : 'muted small'}>{TRAVEL_SOURCES[status.travel]}</span>
           </li>
           <li>
-            <i className="status-dot estimate" aria-hidden="true" />
-            <span>
-              Crowds <span className="muted tiny">· estimate, live crowd data planned</span>
-            </span>
+            <span>Crowds</span>
+            <span className="muted small">Estimate. Live crowd data is planned.</span>
           </li>
         </ul>
       </div>
@@ -146,12 +139,17 @@ export default function App() {
   return (
     <div className={tab === 'discover' ? 'app app-discover' : 'app'}>
       <header className="topbar">
-        <div className="brand">
-          <svg width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
-            <path d="M1 5c3.5-3 7-3 10.5 0S18.5 8 22 5s5.5-2 7 0M1 11c3.5-3 7-3 10.5 0s7 3 10.5 0 5.5-2 7 0M1 17c3.5-3 7-3 10.5 0s7 3 10.5 0 5.5-2 7 0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <button type="button" className="brand" onClick={() => setTab('discover')}>
+          {/* Half sun setting into striped water, like an old motel sign */}
+          <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true">
+            <path d="M5 15a12 12 0 0 1 24 0z" fill="var(--turq)" />
+            <rect x="1" y="17" width="32" height="2.2" rx="1.1" fill="var(--gulf)" />
+            <rect x="5" y="21" width="24" height="2.2" rx="1.1" fill="var(--gulf)" />
           </svg>
-          <span className="brand-name">Beach Day Planner</span>
-        </div>
+          <span className="brand-name">
+            Beach Day <span>Planner</span>
+          </span>
+        </button>
         <nav className="tabs">
           {TABS.map((t) => (
             <button
@@ -191,17 +189,18 @@ export default function App() {
         />
       )}
 
-      {/* Discover shows its own sources line so it can fit on one screen */}
-      {tab !== 'discover' && (
-        <footer className="footer muted tiny">
-          <span>
-            Weather, UV and waves from <a href="https://open-meteo.com/">Open-Meteo</a> · Tides from{' '}
-            <a href="https://tidesandcurrents.noaa.gov/">NOAA</a> · Crowds and rip risk are estimates. Not a
-            safety advisory.
-          </span>
-          <span>Enjoy the coast. Respect the ocean.</span>
-        </footer>
-      )}
+      <footer className="footer">
+        <div>
+          <p className="footer-sign">Enjoy the coast. Respect the ocean.</p>
+          <p>
+            Forecasts from <a href="https://open-meteo.com/">Open-Meteo</a> and the{' '}
+            <a href="https://www.weather.gov/beach/">National Weather Service</a>, tides from{' '}
+            <a href="https://tidesandcurrents.noaa.gov/">NOAA</a>, water tests from{' '}
+            <a href="https://www.texasbeachwatch.com/">Texas Beach Watch</a>. Crowds are estimates. This isn't a
+            safety advisory, so always check the posted flag.
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
