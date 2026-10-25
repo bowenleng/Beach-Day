@@ -188,7 +188,7 @@ function Hero({ beach, isTop, outOfRange, dayLabel, prefs, origin, onBackToTop, 
         <p className="hero-kicker">{kicker}</p>
         <h1 className="hero-title">{isTop && !outOfRange ? headline(beach) : beach.name}</h1>
         <p className="hero-reason">{reason}</p>
-        {tradeoffs.length > 0 && <p className="hero-but">But: {tradeoffs.join(', ')}.</p>}
+        {tradeoffs.length > 0 && <p className="hero-but">Warning: {tradeoffs.join(', ')}.</p>}
         {rip && (
           <p className={`hero-rip rip-${m.rip.level.toLowerCase()}`}>
             <Flag color={conditionFlags(m).rip} size={16} />
