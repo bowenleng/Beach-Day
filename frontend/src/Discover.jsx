@@ -672,12 +672,27 @@ function RankedList({ beaches, tooFar, selectedId, prefs, origin, onSelect, onHo
   const limit = PREFERENCE_OPTIONS.drive.find((o) => o.id === prefs.drive)
   const far = tooFar.filter((b) => b.why === 'far')
   const late = tooFar.filter((b) => b.why === 'late')
+  // Step through the ranking without scrolling down to the list; -1 when an out-of-range beach is picked
+  const at = beaches.findIndex((b) => b.id === selectedId)
+  const step = (by) => onSelect(beaches[at === -1 ? 0 : at + by].id)
 
   return (
     <section className="ranked">
-      <h2>
-        {beaches.length} {beaches.length === 1 ? 'beach' : 'beaches'} {limit.minutes === Infinity ? 'on the coast' : `within ${limit.label} of ${origin.name}`}
-      </h2>
+      <div className="ranked-head">
+        <h2>
+          {beaches.length} {beaches.length === 1 ? 'beach' : 'beaches'} {limit.minutes === Infinity ? 'on the coast' : `within ${limit.label} of ${origin.name}`}
+        </h2>
+        {beaches.length > 1 && (
+          <div className="rank-stepper">
+            <button type="button" aria-label="Previous beach" disabled={at <= 0} onClick={() => step(-1)}>
+              <Icon name="chevron" size={16} className="up" />
+            </button>
+            <button type="button" aria-label="Next beach" disabled={at === beaches.length - 1} onClick={() => step(1)}>
+              <Icon name="chevron" size={16} />
+            </button>
+          </div>
+        )}
+      </div>
       <ol className="ranked-list" ref={listRef}>
         {beaches.map((b) => {
           const { reason, tradeoffs } = pitch(b, prefs, 2, 2)

@@ -345,7 +345,15 @@ button {
   width: 100%;
   opacity: 0;
   cursor: pointer;
+  /* The open list uses the body font, not the condensed heading font around it */
+  font-family: 'Public Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
   font-size: 16px;
+}
+
+.pick select option {
+  font-family: 'Public Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
 }
 
 .moved-note {
@@ -1233,6 +1241,49 @@ button {
 .ranked h2 {
   font-size: 24px;
   padding: 0 10px 8px;
+}
+
+.ranked-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ranked-head h2 {
+  flex: 1;
+}
+
+/* Up and down through the ranking, so the selected beach can change without scrolling to the list */
+.rank-stepper {
+  display: flex;
+  gap: 4px;
+  padding-right: 8px;
+}
+
+.rank-stepper button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--sand);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.rank-stepper button:hover:not(:disabled) {
+  background: var(--foam);
+  border-color: var(--turq);
+}
+
+.rank-stepper button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rank-stepper .up {
+  transform: rotate(180deg);
 }
 
 .ranked-list {

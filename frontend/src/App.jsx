@@ -83,7 +83,7 @@ export default function App() {
             <rect x="5" y="21" width="24" height="2.2" rx="1.1" fill="var(--gulf)" />
           </svg>
           <span className="brand-name">
-            Beach Day <span>Planner</span>
+            Beach <span>Day</span>
           </span>
         </div>
         <DataStatus status={status} />
