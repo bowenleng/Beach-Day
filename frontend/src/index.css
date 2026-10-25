@@ -1441,20 +1441,6 @@ button {
   filter: saturate(0.75) brightness(0.8);
 }
 
-.ai-heat {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  filter: blur(6px);
-  mix-blend-mode: screen;
-  opacity: 0.95;
-}
-
-.view-live .ai-heat {
-  opacity: 0.75;
-}
-
 .ai-boxes {
   position: absolute;
   inset: 0;
@@ -1475,31 +1461,12 @@ button {
   }
 }
 
-/* Faint scan grid and a sweeping line while the AI view is up */
+/* Faint scan grid while the AI view is up */
 .view-frame .ai-overlay {
   background-image:
     linear-gradient(rgba(95, 255, 224, 0.07) 1px, transparent 1px),
     linear-gradient(90deg, rgba(95, 255, 224, 0.07) 1px, transparent 1px);
   background-size: 24px 24px;
-}
-
-.ai-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 28%;
-  background: linear-gradient(180deg, transparent, rgba(95, 255, 224, 0.18) 85%, rgba(95, 255, 224, 0.7));
-  border-bottom: 1px solid rgba(95, 255, 224, 0.9);
-  animation: ai-sweep 2.6s linear infinite;
-}
-
-@keyframes ai-sweep {
-  from {
-    top: -30%;
-  }
-  to {
-    top: 100%;
-  }
 }
 
 .ai-corner {
@@ -1589,21 +1556,6 @@ button {
 
 .ai-toggle button:disabled {
   opacity: 0.45;
-}
-
-.ai-heat-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.ai-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
 }
 
 /* Tablet: the pick across the top, then the map and the ranking side by side */

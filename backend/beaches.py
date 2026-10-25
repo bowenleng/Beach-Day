@@ -6,7 +6,7 @@
 # popularity:   0-1, how busy the beach tends to get (used by the crowd estimate).
 # bay:          True for bay-side beaches, where waves are much smaller than the open Gulf.
 # patrol_url:   Official page with the beach patrol's flag status, where one exists.
-# photo:        Freely licensed photo from Wikimedia Commons (credit and license are shown in the app).
+# photo:        Freely licensed photo, from Wikimedia Commons where one exists (credit and license are shown in the app).
 # google:       Google Maps rating, copied by hand on GOOGLE_AS_OF (shown when no Google API key is set).
 #               place is the Google listing it came from, when that differs from the beach name.
 # cams:         Public live cams at or near the beach. embed is a player URL the owner offers for
@@ -24,6 +24,10 @@ def ozolio(oid):
     if oid.startswith("EMB_"):
         return f"https://relay.ozolio.com/pub.api?cmd=embed&oid={oid}"
     return f"https://relay.ozolio.com/pub.cgi?cmd=iframe&oid={oid}&app_mode=view"
+
+
+def ipcamlive(alias):
+    return f"https://ipcamlive.com/player/player.php?alias={alias}&autoplay=1&mute=1"
 
 
 GOOGLE_AS_OF = "2026-10-24"
@@ -97,6 +101,9 @@ BEACHES = [
         "cams": [
             {"name": "Aransas Pass Harbor Park (bay side)", "provider": "City of Aransas Pass",
              "page": "https://www.youtube.com/watch?v=Mn3vY8bordE", "embed": youtube("Mn3vY8bordE"), "lat": 27.9090, "lon": -97.1440},
+            {"name": "Sandollar Sity", "provider": "Sandollar Sity",
+             "page": "https://www.ipcamlive.com/sanddollar", "embed": ipcamlive("sanddollar"),
+             "lat": 27.8049, "lon": -97.0776},
         ],
         "google": {"place": "Port Aransas Beach", "rating": 4.7, "count": 1040, "place_id": "ChIJhfWx0XmraYYRxYjoh5CD6RE"},
         "tagline": "Lively beach town, drive right up",
@@ -128,6 +135,9 @@ BEACHES = [
         "id": "matagorda", "name": "Matagorda Beach", "city": "Matagorda",
         "lat": 28.5960, "lon": -95.9800, "popularity": 0.25, "bay": False,
         "tide_station": "8773767", "obs_station": "8773767", "buoy": None, "nws_zone": "TXZ436",
+        "photo": {"url": "https://live.staticflickr.com/1535/25414002252_d46b893c3f_b.jpg",
+                  "page": "https://www.flickr.com/photos/63335179@N00/25414002252",
+                  "credit": "Lukas Vermeer (Flickr)", "license": "CC BY-NC-SA 2.0"},
         "google": {"place": "Matagorda Beach", "rating": 4.5, "count": 1630, "place_id": "ChIJpSv1ZC7ZQYYRr1Wl3EC7tnY"},
         "tagline": "Remote and uncrowded, few services",
         "amenities": ["Drive-on beach", "Limited services"],
