@@ -1,8 +1,6 @@
 # Beach Day Planner Website
 ## Overview
-Hackathon project. A web app that scores Texas beaches against your preferences so you can pick the best one for your day. It combines live data from [Open-Meteo](https://open-meteo.com/) (forecasts), [NOAA](https://tidesandcurrents.noaa.gov/) (tides, live water temperature, wind and wave buoys), the [National Weather Service](https://www.weather.gov/beach/) (rip current forecasts and alerts) and [Texas Beach Watch](https://www.texasbeachwatch.com/) (bacteria sampling). The map uses [OpenStreetMap](https://www.openstreetmap.org/). See [PROJECT_NOTES.md](PROJECT_NOTES.md) for the full list of sources.
-
-For project direction and design notes, see [PROJECT_NOTES.md](PROJECT_NOTES.md).
+Hackathon project. A web app that scores Texas beaches against your preferences so you can pick the best one for your day. It combines live data from [Open-Meteo](https://open-meteo.com/) (forecasts), [NOAA](https://tidesandcurrents.noaa.gov/) (tides, live water temperature, wind and wave buoys), the [National Weather Service](https://www.weather.gov/beach/) (rip current forecasts and alerts) and [Texas Beach Watch](https://www.texasbeachwatch.com/) (bacteria sampling). The map uses [OpenStreetMap](https://www.openstreetmap.org/).
 
 ## Requirements
 - [Node.js](https://nodejs.org) (includes npm)
