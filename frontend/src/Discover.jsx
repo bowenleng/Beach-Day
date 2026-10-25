@@ -463,7 +463,11 @@ function Ratings({ reviews }) {
             href={r.url}
             target="_blank"
             rel="noreferrer"
-            title={rated ? `${r.rating} out of 5 from ${r.count.toLocaleString()} ${label} reviews. Not part of the score.` : `See reviews on ${label}`}
+            title={
+              rated
+                ? `${r.rating} out of 5 from ${r.count.toLocaleString()} ${label} reviews${r.name ? ` of ${r.name}` : ''}${r.as_of ? `, as of ${formatDay(r.as_of)}` : ''}. Not part of the score.`
+                : `See reviews on ${label}`
+            }
           >
             {rated ? (
               <>

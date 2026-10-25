@@ -7,6 +7,8 @@
 # bay:          True for bay-side beaches, where waves are much smaller than the open Gulf.
 # patrol_url:   Official page with the beach patrol's flag status, where one exists.
 # photo:        Freely licensed photo from Wikimedia Commons (credit and license are shown in the app).
+# google:       Google Maps rating, copied by hand on GOOGLE_AS_OF (shown when no Google API key is set).
+#               place is the Google listing it came from, when that differs from the beach name.
 # cams:         Public live cams at or near the beach. embed is a player URL the owner offers for
 #               embedding; cams without one are shown as a link to the owner's page.
 # Amenities are hand-entered and should be double-checked before relying on them.
@@ -23,6 +25,8 @@ def ozolio(oid):
         return f"https://relay.ozolio.com/pub.api?cmd=embed&oid={oid}"
     return f"https://relay.ozolio.com/pub.cgi?cmd=iframe&oid={oid}&app_mode=view"
 
+
+GOOGLE_AS_OF = "2026-10-24"
 
 CC_CAMS = "https://visitcorpuschristi.com/beaches/beach-cameras/"
 
@@ -42,6 +46,7 @@ BEACHES = [
             {"name": "North Beach at Sand Rose resort", "provider": "South Padre Island (YouTube)",
              "page": "https://www.youtube.com/watch?v=kJ_EXhKsH30", "embed": youtube("kJ_EXhKsH30"), "lat": 26.1420, "lon": -97.1690},
         ],
+        "google": {"place": "Isla Blanca Park", "rating": 4.5, "count": 4512, "place_id": "ChIJP0D2m-utb4YRw3sgqTSzUKY"},
         "tagline": "Clear water and big resort energy",
         "amenities": ["Seasonal lifeguards", "Restrooms", "Public parking"],
     },
@@ -52,6 +57,7 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/BocaChicaTXwaves.JPG/500px-BocaChicaTXwaves.JPG",
                   "page": "https://commons.wikimedia.org/wiki/File:BocaChicaTXwaves.JPG",
                   "credit": "Justin Hundsnurscher", "license": "Public domain"},
+        "google": {"place": "Boca Chica Beach", "rating": 4.6, "count": 569, "place_id": "ChIJExpa7rqzb4YRtfqNkpyow-Y"},
         "tagline": "Wild and empty, bring everything",
         "amenities": ["No services", "Drive-on beach"],
     },
@@ -62,6 +68,7 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Padre_Island_National_Seashore%2C_dunes%2C_Kleberg_Co%2C_TX%3B_1_Nov_2022.jpg/500px-Padre_Island_National_Seashore%2C_dunes%2C_Kleberg_Co%2C_TX%3B_1_Nov_2022.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Padre_Island_National_Seashore,_dunes,_Kleberg_Co,_TX;_1_Nov_2022.jpg",
                   "credit": "William L. Farr", "license": "CC BY-SA 4.0"},
+        "google": {"place": "Padre Island National Seashore", "rating": 4.8, "count": 2164, "place_id": "ChIJIakuJC33aIYRYK_SNaO2Alk"},
         "tagline": "Undeveloped seashore with room to roam",
         "amenities": ["Visitor center", "Restrooms", "Park entry fee"],
     },
@@ -78,6 +85,7 @@ BEACHES = [
             {"name": "St. Augustine Beach Access", "provider": "City of Corpus Christi",
              "page": CC_CAMS, "embed": ozolio("CID_BHYP000002DB"), "lat": 27.585, "lon": -97.218},
         ],
+        "google": {"place": "Mustang Island State Park", "rating": 4.7, "count": 6124, "place_id": "ChIJ2UCycbX-aIYRD4vljOsY3W8"},
         "tagline": "Quiet dunes and long walks",
         "amenities": ["Restrooms", "Showers", "Park entry fee"],
     },
@@ -110,6 +118,7 @@ BEACHES = [
              "page": "https://hdontap.com/stream/831616/casa-condos-port-aransas-beach-live-webcam/", "embed": None,
              "lat": 27.7960, "lon": -97.0830},
         ],
+        "google": {"place": "Port Aransas Beach", "rating": 4.7, "count": 1040, "place_id": "ChIJhfWx0XmraYYRxYjoh5CD6RE"},
         "tagline": "Lively beach town, drive right up",
         "amenities": ["Seasonal lifeguards", "Restrooms", "Drive-on beach"],
     },
@@ -120,6 +129,7 @@ BEACHES = [
         "photo": {"url": "https://i.imgur.com/aPm4EWs.jpeg",
                 "page": "https://commons.wikimedia.org/wiki/File:Port_Aransas_-Mustang_Island_Beach_-_panoramio.jpg",
                 "credit": "dwh1974 (Panoramio)", "license": "CC BY 3.0"},
+        "google": {"place": "North Beach", "rating": 4.4, "count": 1037, "place_id": "ChIJVTgKyylcaIYRKczijLQZP6A"},
         "tagline": "Calm bay water next to the city",
         "amenities": ["Restrooms", "Public parking"],
     },
@@ -130,6 +140,7 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Rockport_Beach_-_panoramio.jpg/500px-Rockport_Beach_-_panoramio.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Rockport_Beach_-_panoramio.jpg",
                   "credit": "dwh1974 (Panoramio)", "license": "CC BY 3.0"},
+        "google": {"place": "Rockport Beach", "rating": 4.6, "count": 1899, "place_id": "ChIJs-1XnX-0aYYRu6hX3zXgkcU"},
         "tagline": "Gentle bay swimming, great for kids",
         "amenities": ["Restrooms", "Pavilions", "Parking fee"],
     },
@@ -137,6 +148,7 @@ BEACHES = [
         "id": "matagorda", "name": "Matagorda Beach", "city": "Matagorda",
         "lat": 28.5960, "lon": -95.9800, "popularity": 0.25, "bay": False,
         "tide_station": "8773767", "obs_station": "8773767", "buoy": None, "nws_zone": "TXZ436",
+        "google": {"place": "Matagorda Beach", "rating": 4.5, "count": 1630, "place_id": "ChIJpSv1ZC7ZQYYRr1Wl3EC7tnY"},
         "tagline": "Remote and uncrowded, few services",
         "amenities": ["Drive-on beach", "Limited services"],
     },
@@ -147,6 +159,7 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Surfside_Beach_Longview_of_Beach_-_panoramio.jpg/500px-Surfside_Beach_Longview_of_Beach_-_panoramio.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Surfside_Beach_Longview_of_Beach_-_panoramio.jpg",
                   "credit": "Lance L Lowry", "license": "CC BY 3.0"},
+        "google": {"place": "Surfside Jetty County Park", "rating": 4.6, "count": 4141, "place_id": "ChIJHREgXUwTQIYRM50qzmXt9Ek"},
         "tagline": "Laid-back drive-on beach near Houston",
         "amenities": ["Drive-on beach", "Beach parking permit"],
     },
@@ -157,6 +170,7 @@ BEACHES = [
         "photo": {"url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Gfp-texas-galveston-island-state-park-skies-over-the-gulf.jpg/500px-Gfp-texas-galveston-island-state-park-skies-over-the-gulf.jpg",
                   "page": "https://commons.wikimedia.org/wiki/File:Gfp-texas-galveston-island-state-park-skies-over-the-gulf.jpg",
                   "credit": "Yinan Chen", "license": "Public Domain"},
+        "google": {"place": "Galveston Island State Park", "rating": 4.6, "count": 4260, "place_id": "ChIJOaB1ZVuEP4YRMo9bSFNwXVM"},
         "tagline": "Natural shoreline, less busy than town",
         "amenities": ["Restrooms", "Showers", "Park entry fee"],
     },
@@ -181,6 +195,7 @@ BEACHES = [
             {"name": "61st Street Fishing Pier", "provider": "61st Street Pier",
              "page": "https://www.61stpier.com/pier-cam", "embed": ozolio("EMB_CTOK0000018D"), "lat": 29.2705, "lon": -94.8270},
         ],
+        "google": {"place": "East Beach (R.A. Apffel Park)", "rating": 4.5, "count": 1609, "place_id": "ChIJ0TpwXPyfP4YR5n_viaBOn5s"},
         "tagline": "Big, busy, and full of amenities",
         "amenities": ["Seasonal lifeguards", "Restrooms", "Parking fee"],
     },
@@ -196,6 +211,7 @@ BEACHES = [
              "page": "https://bolivarpeninsulatexas.com/Webcams/Crystal-Beach-Surf",
              "embed": "https://player.brownrice.com/embed/coastalsurfcam", "lat": 29.4650, "lon": -94.6300},
         ],
+        "google": {"place": "Bolivar Beach", "rating": 4.5, "count": 74, "place_id": "ChIJQZkT-G4LP4YRLqpNKJY-TlU"},
         "tagline": "Wide sand and beach houses",
         "amenities": ["Drive-on beach", "Beach parking permit"],
     },

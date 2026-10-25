@@ -1,12 +1,15 @@
 """Google Maps and Yelp star ratings for each beach. Shown for reference only, not used in the score.
 
 Uses the Google Places API (GOOGLE_PLACES_API_KEY) and the Yelp Fusion API (YELP_API_KEY) when
-those keys are set. Without a key, that site's entry is just a search link with no rating."""
+those keys are set. Without a Google key, the Google rating copied into beaches.py is used instead;
+without a Yelp key, Yelp is just a search link with no rating."""
 
 import asyncio
 import math
 import os
 from urllib.parse import quote_plus
+
+from beaches import GOOGLE_AS_OF
 
 GOOGLE_URL = "https://places.googleapis.com/v1/places:searchText"
 GOOGLE_FIELDS = "places.displayName,places.rating,places.userRatingCount,places.googleMapsUri,places.location"
@@ -25,9 +28,23 @@ def query_for(beach):
     return beach.get("review_query") or f"{beach['name']}, {beach['city']}, TX"
 
 
+def saved_google(beach):
+    """The hand-copied Google rating for a beach, or just a Maps search link if there isn't one."""
+    g = beach.get("google")
+    if not g:
+        return {"url": f"https://www.google.com/maps/search/?api=1&query={quote_plus(query_for(beach))}"}
+    return {
+        "rating": g["rating"],
+        "count": g["count"],
+        "name": g["place"],
+        "url": f"https://www.google.com/maps/search/?api=1&query={quote_plus(g['place'])}&query_place_id={g['place_id']}",
+        "as_of": GOOGLE_AS_OF,
+    }
+
+
 def search_links(beach):
     return {
-        "google": {"url": f"https://www.google.com/maps/search/?api=1&query={quote_plus(query_for(beach))}"},
+        "google": saved_google(beach),
         "yelp": {"url": f"https://www.yelp.com/search?find_desc={quote_plus(beach['name'])}"
                         f"&find_loc={quote_plus(beach['city'] + ', TX')}"},
     }
