@@ -414,7 +414,7 @@ const SHORT_NAMES = {
   'boca-chica': 'Boca Chica',
   'padre-ns': 'Padre Island Seashore',
   'mustang-island': 'Mustang Island',
-  'port-aransas': 'Port A',
+  'port-aransas': 'Port Aransas',
   rockport: 'Rockport',
   matagorda: 'Matagorda',
   surfside: 'Surfside',
