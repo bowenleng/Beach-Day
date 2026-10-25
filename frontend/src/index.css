@@ -10,6 +10,7 @@
   --ink: #0f2d44;
   --ink-2: #4a5e6d;
   --line: rgba(15, 45, 68, 0.12);
+  --line-strong: rgba(15, 45, 68, 0.24);
   --gulf: #12456b;
   --turq: #2ec4b6;
   --turq-deep: #0a7273;
@@ -1016,6 +1017,9 @@ button {
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--seafoam);
+  /* Sets the map off from the sand page */
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 2px 10px rgba(15, 45, 68, 0.12);
 }
 
 /* Same seafoam as the recolored water, so nothing shows through at the edges */

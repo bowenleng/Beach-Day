@@ -47,7 +47,7 @@ function Hud({ data, loading, error }) {
 // Live player with an AI crowd level on top. "AI frame" shows the exact frame that was analyzed
 // with every detected person boxed.
 export default function CamPlayer({ beachId, camIndex, cam }) {
-  const aiSupported = cam.embed.includes('youtube')
+  const aiSupported = cam.ai
   const [view, setView] = useState('live')
   const { loading, data, error } = useCrowd(beachId, camIndex, aiSupported)
 

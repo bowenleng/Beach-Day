@@ -1,7 +1,8 @@
 """AI crowd counting on live beach cam frames.
 
 Frames come from YouTube's public live thumbnail, which YouTube refreshes about every five minutes
-while a stream is live. Two models look at each frame:
+while a stream is live, or from the snapshot each other player offers: Brownrice's and ipcamlive's are
+current (ipcamlive's only while the cam is live), Ozolio's poster refreshes about every 15 minutes. Two models look at each frame:
 
 - DM-Count (MIT, cvlab-stonybrook/DM-Count via litert-community) estimates a crowd density map.
   It counts dense crowds well, where detectors give up, and the map is drawn as the heat overlay.
@@ -16,6 +17,7 @@ import io
 import os
 import time
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 from PIL import Image
@@ -42,12 +44,22 @@ _model_lock = asyncio.Lock()
 _run_lock = asyncio.Lock()
 
 
-def youtube_frame_url(embed_url):
-    """Latest still of a YouTube live stream, or None for players we can't get frames from."""
-    if "youtube" not in (embed_url or ""):
-        return None
-    video_id = embed_url.split("/embed/")[1].split("?")[0]
-    return f"https://i.ytimg.com/vi/{video_id}/maxresdefault_live.jpg"
+def frame_url(embed_url):
+    """Latest still of a live cam, or None for players we can't get frames from."""
+    embed_url = embed_url or ""
+    if "youtube" in embed_url:
+        video_id = embed_url.split("/embed/")[1].split("?")[0]
+        return f"https://i.ytimg.com/vi/{video_id}/maxresdefault_live.jpg"
+    if "player.brownrice.com/embed/" in embed_url:
+        stream = embed_url.split("/embed/")[1].split("?")[0]
+        return f"https://player.brownrice.com/snapshot/{stream}"
+    query = parse_qs(urlparse(embed_url).query)
+    if "relay.ozolio.com" in embed_url and "oid" in query:
+        return f"https://relay.ozolio.com/pub.api?cmd=poster&oid={query['oid'][0]}"
+    if "ipcamlive.com" in embed_url and "alias" in query:
+        # Redirects to the stream's current frame; 404 while the cam is offline
+        return f"https://ipcamlive.com/player/snapshot.php?alias={query['alias'][0]}"
+    return None
 
 
 async def _download(client, url, path):
@@ -202,8 +214,12 @@ def analyze(models, image):
 async def analyze_frame(client, frame_url):
     """Fetches the latest frame and runs both models. Returns the result and the JPEG bytes."""
     models = await _load_models(client)
-    res = await client.get(frame_url, params={"t": int(time.time() // 60)}, timeout=20)
+    # A per-minute cache buster, added to any query the URL already has
+    sep = "&" if "?" in frame_url else "?"
+    res = await client.get(f"{frame_url}{sep}t={int(time.time() // 60)}", timeout=20, follow_redirects=True)
     res.raise_for_status()
+    if not res.headers.get("content-type", "").startswith("image/"):
+        raise ValueError("The cam didn't return a frame; it may be offline")
     image = Image.open(io.BytesIO(res.content)).convert("RGB")
     async with _run_lock:  # one frame at a time; the models aren't shared safely across threads
         started = time.time()

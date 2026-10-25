@@ -216,16 +216,16 @@ function FollowSelected({ beach }) {
 }
 
 // Recolors the light gray base map to the palette by brightness: the mid-gray water becomes
-// seafoam and the light land becomes sand
+// seafoam and the light land becomes paper, a shade lighter than the sand page around the map
 function TintFilter() {
   return (
     <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
       <filter id="gulf-tint" colorInterpolationFilters="sRGB">
         <feColorMatrix type="saturate" values="0" />
         <feComponentTransfer>
-          <feFuncR type="linear" slope="2.473" intercept="-1.380" />
-          <feFuncG type="linear" slope="0.454" intercept="0.479" />
-          <feFuncB type="linear" slope="0.331" intercept="0.516" />
+          <feFuncR type="linear" slope="2.769" intercept="-1.619" />
+          <feFuncG type="linear" slope="0.938" intercept="0.087" />
+          <feFuncB type="linear" slope="1.177" intercept="-0.169" />
         </feComponentTransfer>
       </filter>
     </svg>

@@ -217,7 +217,7 @@ async def get_beaches(day: date = Query(None, description="YYYY-MM-DD, defaults 
             **{k: beach[k] for k in ("id", "name", "city", "lat", "lon", "tagline", "amenities", "bay", "nws_zone")},
             "patrol_url": beach.get("patrol_url"),
             "photo": beach.get("photo"),
-            "cams": beach.get("cams", []),
+            "cams": [{**c, "ai": vision.frame_url(c["embed"]) is not None} for c in beach.get("cams", [])],
             "date": day.isoformat(),
             "hourly": hourly,
             "sun": {
@@ -280,9 +280,9 @@ def find_cam(beach_id, cam):
     cams = beach.get("cams", []) if beach else []
     if not 0 <= cam < len(cams):
         raise HTTPException(status_code=404, detail="No such cam")
-    frame_url = vision.youtube_frame_url(cams[cam]["embed"])
+    frame_url = vision.frame_url(cams[cam]["embed"])
     if not frame_url:
-        raise HTTPException(status_code=404, detail="AI crowd counting only works on YouTube cams for now")
+        raise HTTPException(status_code=404, detail="This cam's player doesn't offer frames for AI crowd counting")
     return frame_url
 
 
