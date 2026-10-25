@@ -230,7 +230,7 @@ function HeroMessage({ title, children, loading }) {
       </div>
       {loading && (
         <div className="hero-gauge">
-          <TideGauge score={0} />
+          <TideGauge score={0} empty />
         </div>
       )}
     </section>
@@ -602,7 +602,7 @@ function useReorderAnimation(listRef, order) {
   }, [listRef, order])
 }
 
-function RankedList({ beaches, tooFar, selectedId, prefs, origin, onSelect, onWiden }) {
+function RankedList({ beaches, tooFar, selectedId, prefs, origin, onSelect, onHover, onWiden }) {
   const listRef = useRef(null)
   useReorderAnimation(listRef, beaches.map((b) => b.id).join())
   const limit = PREFERENCE_OPTIONS.drive.find((o) => o.id === prefs.drive)
@@ -619,7 +619,16 @@ function RankedList({ beaches, tooFar, selectedId, prefs, origin, onSelect, onWi
           const { reason, tradeoffs } = pitch(b, prefs, 2, 2)
           return (
             <li key={b.id} data-id={b.id}>
-              <button type="button" className={b.id === selectedId ? 'rank-row active' : 'rank-row'} onClick={() => onSelect(b.id)} aria-current={b.id === selectedId}>
+              <button
+                type="button"
+                className={b.id === selectedId ? 'rank-row active' : 'rank-row'}
+                onClick={() => onSelect(b.id)}
+                onMouseEnter={() => onHover(b.id)}
+                onMouseLeave={() => onHover(null)}
+                onFocus={() => onHover(b.id)}
+                onBlur={() => onHover(null)}
+                aria-current={b.id === selectedId}
+              >
                 <span className="rank-num">{b.rank}</span>
                 <span className="rank-main">
                   <strong>{b.name}</strong>
@@ -701,6 +710,8 @@ export default function Discover({ prefs, setPrefs, focusId, setFocusId, onStatu
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
+  // The list row under the pointer, so its map marker can light up
+  const [hoverId, setHoverId] = useState(null)
 
   // Keep "now" current so windows expire while the page is open
   useEffect(() => {
@@ -945,7 +956,7 @@ export default function Discover({ prefs, setPrefs, focusId, setFocusId, onStatu
         <div className="col col-side">
           <div className="area-map map-card">
             {data ? (
-              <BeachMap beaches={ranked} outOfRange={tooFar} selected={selected} topId={top?.id} origin={origin} onSelect={setFocusId} />
+              <BeachMap beaches={ranked} outOfRange={tooFar} selected={selected} topId={top?.id} hoverId={hoverId} origin={origin} onSelect={setFocusId} />
             ) : (
               <div className="map-placeholder" />
             )}
@@ -959,6 +970,7 @@ export default function Discover({ prefs, setPrefs, focusId, setFocusId, onStatu
                 prefs={prefs}
                 origin={origin}
                 onSelect={setFocusId}
+                onHover={setHoverId}
                 onWiden={() => setPrefs({ ...prefs, drive: 'any' })}
               />
             ) : (

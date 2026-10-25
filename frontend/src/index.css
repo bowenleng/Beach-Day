@@ -422,23 +422,39 @@ button {
   border-radius: 2px;
 }
 
-/* The board: the pick and its conditions on the left, the map and the ranking on the right */
+/* The board: the pick and its conditions on the left, the map and the ranking on the right. The
+   hero and the map share a row so the map is always exactly as tall as the hero. */
 .board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 420px;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    'hero map'
+    'cond list'
+    'detail list';
   gap: 20px;
   align-items: start;
   transition: opacity 0.2s;
 }
+
+.area-hero { grid-area: hero; }
+.area-map { grid-area: map; }
+.area-list { grid-area: list; }
+.area-cond { grid-area: cond; }
+.area-detail { grid-area: detail; }
 
 .updating .board {
   opacity: 0.6;
 }
 
 .col {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: contents;
+}
+
+.area-hero,
+.area-cond,
+.area-detail,
+.area-list {
   min-width: 0;
 }
 
@@ -940,26 +956,36 @@ button {
 /* Map */
 .map-card {
   position: relative;
-  height: 330px;
+  align-self: stretch;
+  min-height: 330px;
   border-radius: var(--radius);
   overflow: hidden;
-  background: var(--foam);
+  background: var(--seafoam);
 }
 
+/* Same seafoam as the recolored water, so nothing shows through at the edges */
 .map,
 .map-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #a7dcd6;
+  position: absolute;
+  inset: 0;
+  background: var(--seafoam);
 }
 
 .map {
   font-family: inherit;
 }
 
-/* Base map tiles recolored to the palette by the SVG filter in BeachMap.jsx */
-.map .leaflet-tile-pane {
+/* Base map tiles recolored to the palette by the SVG filter in BeachMap.jsx. The filter goes on
+   each tile, not the whole pane, which left light lines at the tile edges. Leaflet also blends
+   tiles with plus-lighter, which draws a white line wherever tile edges meet on high-density
+   screens (or when tiles are resized to overlap), so tiles blend normally here. */
+.map .leaflet-tile {
   filter: url(#gulf-tint);
+}
+
+.map .leaflet-container img.leaflet-tile,
+.map img.leaflet-tile {
+  mix-blend-mode: normal;
 }
 
 .map .leaflet-control-zoom {
@@ -992,178 +1018,162 @@ button {
   box-shadow: 0 3px 10px rgba(15, 45, 68, 0.2);
 }
 
-.map-flag-wrap {
+.map-marker {
   background: none;
   border: none;
 }
 
-.map-flag-wrap:hover {
+.map-marker:hover {
   z-index: 2000 !important;
 }
 
-.map-flag {
-  position: relative;
-  width: 0;
-  height: 0;
-  cursor: pointer;
-}
-
-.map-flag-pole {
+.map-dot {
   position: absolute;
-  left: -1px;
-  bottom: -2px;
-  width: 2.5px;
-  height: 30px;
-  border-radius: 2px;
-  background: var(--ink);
-}
-
-/* A small foot where the pole meets the sand */
-.map-flag-pole::after {
-  content: '';
-  position: absolute;
-  left: -2px;
-  bottom: 0;
-  width: 6.5px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--ink);
-}
-
-.map-flag-cloth {
-  position: absolute;
-  left: 1.5px;
-  bottom: 11px;
-  min-width: 28px;
-  padding: 0 5px;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  box-shadow: 0 2px 6px rgba(15, 45, 68, 0.3);
   font-family: var(--display);
   font-weight: 800;
-  font-size: 15px;
-  line-height: 18px;
-  text-align: center;
-  color: #fff;
-  border-radius: 0 2px 2px 0;
-  box-shadow: 0 2px 5px rgba(15, 45, 68, 0.3);
-  transform-origin: left center;
+  line-height: 1;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
 }
 
-.map-flag.flag-green .map-flag-cloth { background: var(--flag-green); }
-.map-flag.flag-yellow .map-flag-cloth { background: var(--flag-yellow); color: var(--ink); }
-.map-flag.flag-red .map-flag-cloth { background: var(--flag-red); }
-.map-flag.flag-purple .map-flag-cloth { background: var(--flag-purple); }
-.map-flag.flag-double-red .map-flag-cloth {
-  background: linear-gradient(var(--flag-red) 44%, transparent 44%, transparent 56%, var(--flag-red) 56%);
+.map-dot.dark-text {
+  color: var(--ink);
 }
 
-.map-flag.top .map-flag-pole {
-  height: 40px;
+.map-dot.light-text {
+  color: var(--paper);
 }
 
-.map-flag.top .map-flag-cloth {
-  bottom: 15px;
-  min-width: 36px;
-  font-size: 20px;
-  line-height: 24px;
+.map-score {
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
 }
 
-.map-flag.selected .map-flag-cloth {
-  outline: 2.5px solid var(--ink);
-  outline-offset: 1.5px;
+.map-dot.selected {
+  box-shadow: 0 0 0 2.5px var(--ink), 0 3px 10px rgba(15, 45, 68, 0.35);
 }
 
-.map-flag-name {
+.map-marker:hover .map-dot,
+.map-dot.hover {
+  transform: scale(1.12);
+}
+
+/* Hazard badge on the circle's edge, only when the likely flag is yellow or worse */
+.map-badge {
   position: absolute;
-  left: 2px;
-  bottom: 38px;
-  padding: 2px 8px;
+  right: -5px;
+  top: -5px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 1px 3px rgba(15, 45, 68, 0.35);
+}
+
+.map-name {
+  position: absolute;
+  display: none;
+  padding: 3px 7px;
   border-radius: 6px;
   background: var(--ink);
   color: var(--paper);
   font-size: 12.5px;
   font-weight: 600;
+  line-height: 16.5px;
   white-space: nowrap;
+  pointer-events: none;
 }
 
-.map-flag.top .map-flag-name {
-  bottom: 48px;
+.map-marker:hover .map-name,
+.map-dot.selected + .map-name,
+.map-dot.hover + .map-name {
+  display: block;
 }
 
-.map-flag.left .map-flag-cloth {
-  left: auto;
-  right: 1.5px;
-  border-radius: 2px 0 0 2px;
-  transform-origin: right center;
+/* The starting city: a dark diamond, nothing like the score circles */
+.map-origin i {
+  position: absolute;
+  left: -7px;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  background: var(--ink);
+  border: 2.5px solid var(--paper);
+  transform: rotate(45deg);
+  box-shadow: 0 1px 4px rgba(15, 45, 68, 0.35);
 }
 
-.map-flag.left .map-flag-name {
-  left: auto;
-  right: 2px;
-}
-
-.map-flag-wrap:hover .map-flag-cloth {
-  animation: flutter 0.8s ease-in-out;
-}
-
-@keyframes flutter {
-  25% {
-    transform: skewY(-5deg) scaleX(0.95);
-  }
-  55% {
-    transform: skewY(3deg) scaleX(1.03);
-  }
-  80% {
-    transform: skewY(-1.5deg);
-  }
+.map-origin span {
+  position: absolute;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 23.5px;
+  padding: 0 7px;
+  color: var(--ink);
+  white-space: nowrap;
+  text-shadow: 0 0 3px var(--sand), 0 0 3px var(--sand), 0 0 6px var(--sand);
 }
 
 .map-town {
   position: absolute;
-  top: 5px;
-  left: 0;
-  transform: translateX(-50%);
-  line-height: 15px;
+  padding: 0 7px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 22px;
   color: var(--ink-2);
   white-space: nowrap;
   pointer-events: none;
   text-shadow: 0 0 3px var(--sand), 0 0 3px var(--sand), 0 0 6px var(--sand);
 }
 
-.map-place {
-  position: relative;
-  width: 0;
-  height: 0;
-}
-
-.map-place i {
+.map-legend {
   position: absolute;
-  left: -5px;
-  top: -5px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--ink);
-  border: 2px solid var(--paper);
-}
-
-.map-town.at-below-left {
-  transform: translateX(calc(-100% - 2px));
-}
-
-.map-town.at-below-right {
-  transform: translateX(6px);
-}
-
-.map-town.at-left {
-  top: -8px;
-  transform: translateX(calc(-100% - 10px));
-}
-
-.map-town.origin {
-  font-size: 13.5px;
-  font-weight: 700;
+  left: 10px;
+  bottom: 10px;
+  z-index: 800;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(251, 247, 239, 0.92);
+  box-shadow: 0 1px 4px rgba(15, 45, 68, 0.15);
+  font-size: 12px;
   color: var(--ink);
+  pointer-events: none;
+}
+
+.map-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.map-legend-scale i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 45, 68, 0.15);
+  margin-right: -2px;
+}
+
+.map-legend-scale i:last-of-type {
+  margin-right: 2px;
+}
+
+.map-legend .map-badge {
+  position: static;
+  width: 15px;
+  height: 15px;
 }
 
 /* Ranked list */
@@ -1595,20 +1605,19 @@ button {
   margin-left: auto;
 }
 
-/* Tablet: one column, with the map and the ranking side by side */
+/* Tablet: the pick across the top, then the map and the ranking side by side */
 @media (max-width: 1099px) {
   .board {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .col-side {
-    display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: stretch;
+    grid-template-rows: auto;
+    grid-template-areas:
+      'hero hero'
+      'map list'
+      'cond cond'
+      'detail detail';
   }
 
-  .col-side .map-card {
-    height: auto;
+  .map-card {
     min-height: 380px;
   }
 
@@ -1674,11 +1683,6 @@ button {
     gap: 16px;
   }
 
-  .col,
-  .col-side {
-    display: contents;
-  }
-
   .area-hero { order: 1; }
   .area-map { order: 2; }
   .area-list { order: 3; }
@@ -1730,9 +1734,8 @@ button {
     right: 14px;
   }
 
-  .map-card,
-  .col-side .map-card {
-    height: 300px;
+  .map-card {
+    height: 320px;
     min-height: 0;
   }
 

@@ -32,7 +32,7 @@ const TRAVEL_SOURCES = {
 // Header menu listing every data source, whether it answered, and how fresh it is. It stays quiet
 // unless something is down.
 function DataStatus({ status }) {
-  if (!status) return <span className="sources-link muted">Sources</span>
+  if (!status) return <span className="status-menu sources-link muted">Sources</span>
   const failed = status.sources.filter((s) => !s.ok)
   return (
     <details className="status-menu">

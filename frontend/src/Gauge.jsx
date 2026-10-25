@@ -26,14 +26,23 @@ function useTweened(target, duration = 900) {
       if (t < 1) frame = requestAnimationFrame(step)
     }
     frame = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(frame)
+    // Animation frames pause in background tabs; make sure the number still lands on the score
+    const land = setTimeout(() => {
+      from.current = target
+      setValue(target)
+    }, duration + 100)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(land)
+    }
   }, [target, duration])
   return value
 }
 
 // The score as a tide staff: a painted gauge board with water standing at the score. The water
 // starts empty and rises on load, then moves whenever the score changes.
-export default function TideGauge({ score, size = 'large' }) {
+// With `empty` (while loading) it shows only the staff, with no number or verdict.
+export default function TideGauge({ score, size = 'large', empty = false }) {
   const id = useId().replace(/:/g, '')
   const [level, setLevel] = useState(reduceMotion() ? score : 0)
   useEffect(() => {
@@ -45,11 +54,13 @@ export default function TideGauge({ score, size = 'large' }) {
   const y = H - (level / 100) * H
 
   return (
-    <div className={`gauge gauge-${size}`} role="img" aria-label={`Score ${score} out of 100, ${FIT_TEXT[tone].toLowerCase()}`}>
-      <div className="gauge-readout" aria-hidden="true">
-        <span className="gauge-number">{shown}</span>
-        <span className="gauge-fit">{FIT_TEXT[tone]}</span>
-      </div>
+    <div className={`gauge gauge-${size}`} role="img" aria-label={empty ? 'Score loading' : `Score ${score} out of 100, ${FIT_TEXT[tone].toLowerCase()}`}>
+      {!empty && (
+        <div className="gauge-readout" aria-hidden="true">
+          <span className="gauge-number">{shown}</span>
+          <span className="gauge-fit">{FIT_TEXT[tone]}</span>
+        </div>
+      )}
       <svg className="gauge-staff" viewBox={`-2 -6 ${W + 4} ${H + 12}`} aria-hidden="true">
         <defs>
           <linearGradient id={`water-${id}`} x1="0" y1="0" x2="0" y2="1">
