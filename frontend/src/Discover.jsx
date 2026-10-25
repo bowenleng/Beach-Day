@@ -31,6 +31,7 @@ import {
   remainingWindow,
   ripLine,
   safetyNotes,
+  scoreBreakdown,
   shortName,
   waveText,
   windowViable,
@@ -554,14 +555,76 @@ function CamTab({ beach }) {
   )
 }
 
-function DetailTabs({ beach, prefs }) {
-  const [tab, setTab] = useState('safety')
+// How the score adds up: each part's score out of 100 times its weight, minus the long-drive penalty
+function ScoreTab({ beach }) {
+  const { rows, weighted, penalty, total } = scoreBreakdown(beach)
+  return (
+    <>
+      <table className="sources-table score-table">
+        <thead>
+          <tr>
+            <th scope="col">Part</th>
+            <th scope="col">Score</th>
+            <th scope="col">Weight</th>
+            <th scope="col">Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id}>
+              <th scope="row">
+                {r.label}
+                <span className="muted small score-about">{r.about}</span>
+              </th>
+              <td>
+                <span className="score-bar" aria-hidden="true">
+                  <span style={{ width: `${r.score}%` }} />
+                </span>
+                {r.score}
+              </td>
+              <td>{Math.round(r.weight * 100)}%</td>
+              <td>{r.points.toFixed(1)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          {penalty > 0 && (
+            <>
+              <tr>
+                <th scope="row" colSpan={3}>Weighted total</th>
+                <td>{weighted.toFixed(1)}</td>
+              </tr>
+              <tr>
+                <th scope="row" colSpan={3}>
+                  More time driving than on the sand
+                  <span className="muted small score-about">Loses 5 points per extra hour in the car, up to 30</span>
+                </th>
+                <td>−{penalty.toFixed(1)}</td>
+              </tr>
+            </>
+          )}
+          <tr className="score-total">
+            <th scope="row" colSpan={3}>Score</th>
+            <td>{total}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <p className="muted small">
+        Each part is scored out of 100 against your preferences for this time window. 75 and up is a great day, 60 to 74 is
+        mixed, under 60 is rough. Star ratings and live cams aren't part of the score.
+      </p>
+    </>
+  )
+}
+
+function DetailTabs({ beach, prefs, tab, setTab }) {
   const m = beach.metrics
   const notes = safetyNotes(m, prefs)
   const serious = notes.filter((n) => n.level !== 'info').length
   const tabs = [
     ['safety', serious ? `Safety (${serious})` : 'Safety'],
     ['cams', beach.cams?.length > 1 ? `Live cams (${beach.cams.length})` : 'Live cam'],
+    ['score', 'Score breakdown'],
     ['sources', 'Where the numbers come from'],
   ]
   return (
@@ -575,6 +638,7 @@ function DetailTabs({ beach, prefs }) {
       </div>
       {tab === 'safety' && <SafetyTab beach={beach} m={m} notes={notes} />}
       {tab === 'cams' && <CamTab beach={beach} />}
+      {tab === 'score' && <ScoreTab beach={beach} />}
       {tab === 'sources' && <SourcesTab m={m} beach={beach} travel={beach.travel} />}
     </section>
   )
@@ -712,6 +776,8 @@ export default function Discover({ prefs, setPrefs, focusId, setFocusId, onStatu
   const [attempt, setAttempt] = useState(0)
   // The list row under the pointer, so its map marker can light up
   const [hoverId, setHoverId] = useState(null)
+  // Stays put when you pick another beach, so you can flip through every beach's cams
+  const [detailTab, setDetailTab] = useState('safety')
 
   // Keep "now" current so windows expire while the page is open
   useEffect(() => {
@@ -948,7 +1014,7 @@ export default function Discover({ prefs, setPrefs, focusId, setFocusId, onStatu
                 <Conditions beach={selected} dayLabel={dayLabel} reviews={reviews?.beaches?.[selected.id]} />
               </div>
               <div className="area-detail">
-                <DetailTabs key={selected.id} beach={selected} prefs={prefs} />
+                <DetailTabs key={selected.id} beach={selected} prefs={prefs} tab={detailTab} setTab={setDetailTab} />
               </div>
             </>
           )}

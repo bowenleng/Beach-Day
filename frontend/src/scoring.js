@@ -51,13 +51,13 @@ export function normalizePrefs(saved) {
 const DRIVE_GRACE = 10
 export const driveLimit = (prefs) => PREFERENCE_OPTIONS.drive.find((o) => o.id === prefs.drive).minutes
 
-// Internal weights. The UI explains the score in words instead of showing these.
-const FACTORS = [
-  { id: 'water', weight: 0.3 },
-  { id: 'crowds', weight: 0.2 },
-  { id: 'sun', weight: 0.15 },
-  { id: 'weather', weight: 0.15 },
-  { id: 'travel', weight: 0.2 },
+// How much each part counts toward the score. The score breakdown tab shows these.
+export const FACTORS = [
+  { id: 'water', weight: 0.3, label: 'Water', about: 'Waves against what you want, rip risk, bacteria, water temperature and water alerts' },
+  { id: 'crowds', weight: 0.2, label: 'Crowds', about: 'Estimated crowd against how busy you like it' },
+  { id: 'sun', weight: 0.15, label: 'Sun', about: 'Peak UV against the sun you want' },
+  { id: 'weather', weight: 0.15, label: 'Weather', about: 'Rain chance, temperature, wind, storms and weather alerts' },
+  { id: 'travel', weight: 0.2, label: 'Drive', about: 'Round-trip drive compared to your hours on the sand' },
 ]
 
 // NWS alerts that mean "stay out of the water"
@@ -293,11 +293,23 @@ export function scoreParts(m, prefs, minutes, hours) {
   return { water: clamp(water), crowds: clamp(crowds), sun: clamp(sun), weather: clamp(weather), travel: clamp(travel) }
 }
 
+// Spending more time in the car than on the sand is rarely worth it, however nice the beach
+const drivePenalty = (minutes, hours) => Math.min(30, Math.max(0, (2 * minutes) / 60 - hours) * 5)
+
 function totalScore(parts, minutes, hours) {
   const weighted = FACTORS.reduce((sum, f) => sum + parts[f.id] * f.weight, 0)
-  // Spending more time in the car than on the sand is rarely worth it, however nice the beach
-  const extraHours = Math.max(0, (2 * minutes) / 60 - hours)
-  return clamp(weighted - Math.min(30, extraHours * 5))
+  return clamp(weighted - drivePenalty(minutes, hours))
+}
+
+// Each part's score, weight and points, for showing how a ranked beach's score adds up
+export function scoreBreakdown(beach) {
+  const rows = FACTORS.map((f) => ({ ...f, score: beach.parts[f.id], points: beach.parts[f.id] * f.weight }))
+  return {
+    rows,
+    weighted: rows.reduce((sum, r) => sum + r.points, 0),
+    penalty: drivePenalty(beach.travel.minutes, beach.hours),
+    total: beach.score,
+  }
 }
 
 // great / mixed / poor
