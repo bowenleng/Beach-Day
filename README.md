@@ -221,6 +221,6 @@ Beach-Day-Planner-App/
 
 ## Team
 
-Built by **Reid Messer** ([messerdsp](https://github.com/messerdsp)), **Bowen Leng** ([bowenleng](https://github.com/bowenleng)) and **furpz** ([furpz](https://github.com/furpz)).
+Built by **Reid Messer** ([messerdsp](https://github.com/messerdsp)), **Bowen Leng** ([bowenleng](https://github.com/bowenleng)),**furpz** ([furpz](https://github.com/furpz)) and **Erik Schyma** ([erikags42-rgb](https://github.com/erikags42-rgb)). 
 
 > Beach Day is a planning aid, not a safety advisory. Always check the posted flag and swim near a lifeguard.
