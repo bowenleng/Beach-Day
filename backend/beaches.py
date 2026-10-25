@@ -39,8 +39,6 @@ BEACHES = [
                   "page": "https://commons.wikimedia.org/wiki/File:South_Padre_Island_beach.jpg",
                   "credit": "Brendajane", "license": "Public domain"},
         "cams": [
-            {"name": "Isla Blanca Beach Park surf cam", "provider": "South Padre Surf Company",
-             "page": "https://www.youtube.com/watch?v=0FaRaPPTS8M", "embed": youtube("0FaRaPPTS8M"), "lat": 26.0764, "lon": -97.1605},
             {"name": "Courtyard by Marriott beach cam", "provider": "South Padre Island (YouTube)",
              "page": "https://www.youtube.com/watch?v=dzylsC0KcOE", "embed": youtube("dzylsC0KcOE"), "lat": 26.1188, "lon": -97.1805},
             {"name": "North Beach at Sand Rose resort", "provider": "South Padre Island (YouTube)",
